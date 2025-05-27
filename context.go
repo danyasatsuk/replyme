@@ -19,6 +19,7 @@ type CtxInterface interface {
 	GetFlagString(name string, defaultValue string) string
 	GetFlagIntArray(name string) []int
 	GetFlagStringArray(name string) []string
+	GetFlagBool(name string) bool
 	Print(data ...interface{})
 	Printf(format string, data ...interface{})
 	PrintMarkdown(markdown string, data ...interface{})
@@ -139,6 +140,11 @@ func (c *Context) GetFlagIntArray(name string) []int {
 // GetFlagStringArray is a method for getting a flag string array value.
 func (c *Context) GetFlagStringArray(name string) []string {
 	return c.command.Flags.GetFlagStringArray(name)
+}
+
+// GetFlagBool is a method for getting a flag bool value.
+func (c *Context) GetFlagBool(name string) bool {
+	return c.command.Flags.GetFlagBool(name)
 }
 
 // Print is a method for printing a message.

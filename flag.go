@@ -185,4 +185,17 @@ func (f Flags) GetFlagStringArray(name string) []string {
 	return p.([]string)
 }
 
-// TODO(critical): implement GetFlagBool
+// GetFlagBool returns the value of the flag with the specified name as a bool.
+func (f Flags) GetFlagBool(name string) bool {
+	i := slices.IndexFunc(f, func(flag Flag) bool {
+		return flag.GetName() == name && flag.ValueType() == "bool"
+	})
+	if i == -1 {
+		return false
+	}
+	p, err := f[i].ParsedValue()
+	if err != nil {
+		return false
+	}
+	return p.(bool)
+}
