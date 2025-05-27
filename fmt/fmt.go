@@ -34,7 +34,7 @@ func Append(b []byte, a ...any) []byte {
 }
 
 func Appendf(b []byte, format string, a ...any) []byte {
-	return fmt.Appendf(b, format, a)
+	return fmt.Appendf(b, format, a...)
 }
 
 func Appendln(b []byte, a ...any) []byte {
