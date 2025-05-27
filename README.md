@@ -3,6 +3,8 @@
 <p style="text-align: center">A tool for creating REPL sessions in Golang.</p>
 <p style="text-align: center"><b>[English] <a href="README.ru.md">[Русский]</a></b></p>
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/danyasatsuk/replyme.svg)](https://pkg.go.dev/github.com/danyasatsuk/replyme)
+
 > [!CAUTION]
 > This project may contain errors and flaws, as its development has just begun. Read more about this in the Bugs and Roadmap section
 

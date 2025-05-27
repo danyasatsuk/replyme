@@ -3,6 +3,8 @@
 <p style="text-align: center">Инструмент для создания REPL сессий в Golang.</p>
 <p style="text-align: center"><b><a href="README.ru.md">[English]</a> [Русский]</b></p>
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/danyasatsuk/replyme.svg)](https://pkg.go.dev/github.com/danyasatsuk/replyme)
+
 > [!CAUTION]
 > Этот проект может содержать ошибки и недоработки, так как его разработка только начата. Подробнее об этом в разделе "Баги и Roadmap"
 
