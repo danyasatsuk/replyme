@@ -24,7 +24,7 @@ func InputIntNew() *InputInt {
 
 func (m *InputInt) SetParams(p TUIInputIntParams) {
 	m.params = p
-	m.input.Placeholder = "Введите число"
+	m.input.Placeholder = L(i18n_inputint_placeholder)
 	m.input.Focus()
 }
 
@@ -55,7 +55,6 @@ func (m *InputInt) Update(msg tea.Msg) (*InputInt, tea.Cmd) {
 				return m, nil
 			}
 
-			// Проверка на диапазон
 			if m.params.MinValue != 0 && intVal < m.params.MinValue {
 				return m, nil
 			}
@@ -63,7 +62,6 @@ func (m *InputInt) Update(msg tea.Msg) (*InputInt, tea.Cmd) {
 				return m, nil
 			}
 
-			// Валидация функцией
 			if m.params.Validate != nil && !m.params.Validate(strVal) {
 				return m, nil
 			}

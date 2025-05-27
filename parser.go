@@ -1,7 +1,6 @@
 package replyme
 
 import (
-	"errors"
 	"fmt"
 	"golang.org/x/exp/slices"
 	"strconv"
@@ -59,9 +58,8 @@ func ParseCommand(
 	var posArgs []string
 	var currentCmdSchema *CommandSchema
 
-	// 🔍 Поиск начальной команды
 	if len(tokens) == 0 {
-		return nil, errors.New("пустая команда")
+		return nil, ErrorCommandEmpty
 	}
 	first := tokens[0]
 	for i := range commands {
@@ -119,14 +117,11 @@ func ParseCommand(
 			}
 			ast.Flags[lastCmd][name] = append(ast.Flags[lastCmd][name], ASTFlag{Type: flagType, Value: value})
 		} else {
-			// Команда
-			// Если у команды нет подкоманд — всё, что дальше, это аргументы
 			if len(currentCmdSchema.Subcommands) == 0 {
 				posArgs = append(posArgs, token)
 				continue
 			}
 
-			// Иначе проверяем как подкоманду
 			found := false
 			for j := range currentCmdSchema.Subcommands {
 				if currentCmdSchema.Subcommands[j].Name == token {
@@ -136,7 +131,7 @@ func ParseCommand(
 				}
 			}
 			if !found {
-				return nil, fmt.Errorf("неизвестная подкоманда: %s", token)
+				return nil, NewErrorSubcommandUnknown(token)
 			}
 			lastCmd = token
 			ast.CommandTree = append(ast.CommandTree, token)
@@ -144,7 +139,6 @@ func ParseCommand(
 		}
 	}
 
-	// Позиционные аргументы
 	expected := argsSchema[lastCmd]
 	if len(posArgs) < len(expected) {
 		return nil, NewErrorArgumentNotFound(lastCmd)
@@ -201,10 +195,10 @@ func tokenize(input string) ([]string, error) {
 	}
 
 	if inQuote {
-		return nil, fmt.Errorf("незакрытая кавычка")
+		return nil, ErrorCommandUnclosedQuotes
 	}
 	if escape {
-		return nil, fmt.Errorf("незавершённый escape-последовательность")
+		return nil, ErrorIncompleteEscapeSequence
 	}
 	if current.Len() > 0 {
 		result = append(result, current.String())

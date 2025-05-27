@@ -332,7 +332,6 @@ func (c *Context) ExecLive(cmd string, args ...string) error {
 		return err
 	}
 
-	// Чтение и отправка в REPL
 	go c.streamOutput(stdoutPipe, LogMsgStatus_Print)
 	go c.streamOutput(stderrPipe, LogMsgStatus_Error)
 

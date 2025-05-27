@@ -47,14 +47,14 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 		langName := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
 		tag, err := language.Parse(langName)
 		if err != nil {
-			log.Printf("⚠️  Invalid language tag in file %s: %v", f.Name(), err)
+			log.Printf("⚠️ Invalid language tag in file %s: %v", f.Name(), err)
 			continue
 		}
 
 		for _, msg := range raw.Messages {
 			id, ok := msg["id"].(string)
 			if !ok {
-				log.Printf("⚠️  Сообщение без ID пропущено: %+v", msg)
+				log.Printf("⚠️ Messages without ID skipped: %+v", msg)
 				continue
 			}
 
@@ -68,7 +68,7 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 			}
 
 			if err := bundle.AddMessages(tag, message); err != nil {
-				log.Printf("⚠️  Не удалось добавить сообщение %s: %v", id, err)
+				log.Printf("⚠️ couldn't add message %s: %v", id, err)
 			}
 		}
 	}
@@ -102,7 +102,6 @@ func detectSystemLanguageCode() string {
 	case "windows":
 		return getFromEnvFallback("en")
 	case "darwin":
-		// macOS: сначала из defaults, затем из env
 		lang := detectMacLang()
 		if lang != "" {
 			return lang

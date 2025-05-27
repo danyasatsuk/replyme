@@ -25,7 +25,7 @@ func ConfirmNew(close chan bool) *Confirm {
 
 func (m *Confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) {
 	m.params = p
-	m.cursor = 0 // по умолчанию Yes
+	m.cursor = 0
 	m.c = c
 }
 
@@ -71,15 +71,15 @@ func (m *Confirm) Update(msg tea.Msg) (*Confirm, tea.Cmd) {
 }
 
 func (m *Confirm) View() string {
-	yes := "[Да]"
-	no := "[Нет]"
+	yes := fmt.Sprintf("[%s]", L(i18n_confirm_view_yes))
+	no := fmt.Sprintf("[%s]", L(i18n_confirm_view_no))
 
 	if m.cursor == 0 {
-		yes = "[> Да <]"
-		no = "[  Нет  ]"
+		yes = fmt.Sprintf("[> %s <]", L(i18n_confirm_view_yes))
+		no = fmt.Sprintf("[  %s  ]", L(i18n_confirm_view_no))
 	} else {
-		yes = "[  Да  ]"
-		no = "[> Нет <]"
+		yes = fmt.Sprintf("[  %s  ]", L(i18n_confirm_view_yes))
+		no = fmt.Sprintf("[> %s <]", L(i18n_confirm_view_no))
 	}
 
 	return fmt.Sprintf(`%s

@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	okStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("10")) // зелёный
-	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))  // красный
+	okStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 )
 
 type InputFile struct {
@@ -35,7 +35,7 @@ func InputFileNew() *InputFile {
 
 func (m *InputFile) SetParams(p TUIInputFileParams) {
 	m.params = p
-	m.input.Placeholder = "Путь до файла"
+	m.input.Placeholder = L(i18n_inputfile_placeholder)
 	m.input.Focus()
 }
 
@@ -69,17 +69,16 @@ func (m *InputFile) Update(msg tea.Msg) (*InputFile, tea.Cmd) {
 			path := m.input.Value()
 			abs, err := filepath.Abs(path)
 			if err != nil {
-				m.setStatus("Невозможно определить абсолютный путь", errorStyle)
+				m.setStatus(L(i18n_inputfile_fullpath_error), errorStyle)
 				return m, nil
 			}
 
 			stat, err := os.Stat(abs)
 			if err != nil || stat.IsDir() {
-				m.setStatus("Файл не найден или это папка", errorStyle)
+				m.setStatus(L(i18n_inputfile_file_notfound), errorStyle)
 				return m, nil
 			}
 
-			// Проверка на расширение
 			if len(m.params.Extensions) > 0 {
 				ok := false
 				ext := strings.ToLower(filepath.Ext(abs))
@@ -90,26 +89,24 @@ func (m *InputFile) Update(msg tea.Msg) (*InputFile, tea.Cmd) {
 					}
 				}
 				if !ok {
-					m.setStatus("Недопустимое расширение файла", errorStyle)
+					m.setStatus(L(i18n_inputfile_extension_error), errorStyle)
 					return m, nil
 				}
 			}
 
-			// Проверка на размер
 			if m.params.MaxFileSize > 0 {
 				sizeKB := stat.Size() / 1024
 				if int(sizeKB) > m.params.MaxFileSize {
-					m.setStatus(fmt.Sprintf("Файл слишком большой: %d KB > %d KB", sizeKB, m.params.MaxFileSize), errorStyle)
+					m.setStatus(fmt.Sprintf(L(i18n_inputfile_size_error), sizeKB, m.params.MaxFileSize), errorStyle)
 					return m, nil
 				}
 			}
 
-			// Всё прошло — читаем файл
 			var contents []byte
 			if !m.params.DoNotOutput {
 				data, err := os.ReadFile(abs)
 				if err != nil {
-					m.setStatus("Ошибка при чтении файла", errorStyle)
+					m.setStatus(L(i18n_inputfile_read_error), errorStyle)
 					return m, nil
 				}
 				contents = data
@@ -121,7 +118,7 @@ func (m *InputFile) Update(msg tea.Msg) (*InputFile, tea.Cmd) {
 			}
 			m.IsValidated = true
 			m.input.Reset()
-			m.setStatus("Файл успешно выбран", okStyle)
+			m.setStatus(L(i18n_inputfile_success), okStyle)
 			return m, nil
 		}
 	}
@@ -153,7 +150,7 @@ func (m *InputFile) updateStatus() {
 	path := m.input.Value()
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		m.setStatus("Невозможно определить путь", errorStyle)
+		m.setStatus(L(i18n_inputfile_path_error), errorStyle)
 		return
 	}
 	if stat, err := os.Stat(absPath); err == nil && !stat.IsDir() {

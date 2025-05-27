@@ -2,7 +2,6 @@ package replyme
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/exp/slices"
 	"reflect"
 	"strconv"
@@ -116,7 +115,7 @@ func (f *FlagValue[T]) Parse(flag string) (interface{}, error) {
 			parsed = any(false).(T)
 		}
 	default:
-		return nil, fmt.Errorf("неизвестный тип флага")
+		return nil, NewErrorUnknownFlagType(reflect.TypeOf(parsed).String())
 	}
 	f.value = parsed
 	f.hasValue = true

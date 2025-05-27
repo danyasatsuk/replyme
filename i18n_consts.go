@@ -4,5 +4,19 @@
 package replyme
 
 const (
-	i18n_cmd_input_command string = "cmd_input_command"
+	i18n_cmd_input_command         string = "cmd_input_command"
+	i18n_cmd_input_running         string = "cmd_input_running"
+	i18n_confirm_view_yes          string = "confirm_view_yes"
+	i18n_confirm_view_no           string = "confirm_view_no"
+	i18n_locales_message_notfound  string = "locales_message_notfound"
+	i18n_inputfile_placeholder     string = "inputfile_placeholder"
+	i18n_inputfile_fullpath_error  string = "inputfile_fullpath_error"
+	i18n_inputfile_file_notfound   string = "inputfile_file_notfound"
+	i18n_inputfile_extension_error string = "inputfile_extension_error"
+	i18n_inputfile_size_error      string = "inputfile_size_error"
+	i18n_inputfile_read_error      string = "inputfile_read_error"
+	i18n_inputfile_success         string = "inputfile_success"
+	i18n_inputfile_path_error      string = "inputfile_path_error"
+	i18n_parser_empty_command      string = "parser_empty_command"
+	i18n_inputint_placeholder      string = "inputint_placeholder"
 )

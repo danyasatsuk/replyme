@@ -138,7 +138,7 @@ func (m TerminalInput) Update(msg tea.Msg) (TerminalInput, tea.Cmd) {
 
 func (m TerminalInput) View() string {
 	if m.running {
-		m.viewport.SetContent(GrayStyle("> Команда выполняется..."))
+		m.viewport.SetContent(GrayStyle(L(i18n_cmd_input_running)))
 	}
 	return m.viewport.View()
 }
@@ -158,7 +158,7 @@ func (m *TerminalInput) recalculateLines() {
 	if strings.TrimSpace(m.text) == "" {
 		m.lines = []string{GrayStyle("> " + L(i18n_cmd_input_command))}
 	} else {
-		wrapped := wrapLines(m.text, m.width-2) // учёт '> '
+		wrapped := wrapLines(m.text, m.width-2)
 		for i := range wrapped {
 			wrapped[i] = GrayStyle("> ") + wrapped[i]
 		}
@@ -178,7 +178,6 @@ func (m TerminalInput) render() string {
 
 	marked := string(runes[:m.cursor]) + cursorChar + string(runes[m.cursor:])
 
-	// просто используй те же правила, что и в recalculateLines
 	if strings.TrimSpace(m.text) == "" {
 		return GrayStyle("> " + L(i18n_cmd_input_command))
 	}

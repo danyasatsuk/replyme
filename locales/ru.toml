@@ -2,3 +2,58 @@
 id = "cmd_input_command"
 translation = "Введите команду..."
 
+[[message]]
+id = "cmd_input_running"
+translation = "> Команда выполняется..."
+
+[[message]]
+id = "confirm_view_yes"
+translation = "Да"
+
+[[message]]
+id = "confirm_view_no"
+translation = "Нет"
+
+[[message]]
+id = "locales_message_notfound"
+translation = "Не удалось добавить сообщение"
+
+[[message]]
+id = "inputfile_placeholder"
+translation = "Путь до файла"
+
+[[message]]
+id = "inputfile_fullpath_error"
+translation = "Невозможно определить абсолютный путь"
+
+[[message]]
+id = "inputfile_file_notfound"
+translation = "Файл не найден или это папка"
+
+[[message]]
+id = "inputfile_extension_error"
+translation = "Недопустимое расширение файла"
+
+[[message]]
+id = "inputfile_size_error"
+translation = "Файл слишком большой: %d KB > %d KB"
+
+[[message]]
+id = "inputfile_read_error"
+translation = "Ошибка при чтении файла"
+
+[[message]]
+id = "inputfile_success"
+translation = "Файл успешно выбран"
+
+[[message]]
+id = "inputfile_path_error"
+translation = "Невозможно определить путь"
+
+[[message]]
+id = "parser_empty_command"
+translation = "пустая команда"
+
+[[message]]
+id = "inputint_placeholder"
+translation = "Введите число"

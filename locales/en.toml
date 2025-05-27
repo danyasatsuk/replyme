@@ -1,0 +1,59 @@
+[[message]]
+id = "cmd_input_command"
+translation = "Enter the command..."
+
+[[message]]
+id = "cmd_input_running"
+translation = "> The command is running..."
+
+[[message]]
+id = "confirm_view_yes"
+translation = "Yes"
+
+[[message]]
+id = "confirm_view_no"
+translation = "No"
+
+[[message]]
+id = "locales_message_notfound"
+translation = "Couldn't add message"
+
+[[message]]
+id = "inputfile_placeholder"
+translation = "File path"
+
+[[message]]
+id = "inputfile_fullpath_error"
+translation = "The absolute path cannot be determined"
+
+[[message]]
+id = "inputfile_file_notfound"
+translation = "File not found or this is a folder"
+
+[[message]]
+id = "inputfile_extension_error"
+translation = "Invalid file extension"
+
+[[message]]
+id = "inputfile_size_error"
+translation = "The file is too big: %d KB > %d KB"
+
+[[message]]
+id = "inputfile_read_error"
+translation = "Error reading the file"
+
+[[message]]
+id = "inputfile_success"
+translation = "File successfully selected"
+
+[[message]]
+id = "inputfile_path_error"
+translation = "Path cannot be determined"
+
+[[message]]
+id = "parser_empty_command"
+translation = "empty command"
+
+[[message]]
+id = "inputint_placeholder"
+translation = "Enter a number"

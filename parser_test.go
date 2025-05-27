@@ -83,7 +83,7 @@ func TestParseCommand_UnknownCommand(t *testing.T) {
 		ArgsSchema{},
 		"unknowncmd",
 	)
-	if err == nil || err.Error() != "неизвестная команда: unknowncmd" && !errors.Is(err, ErrorUnknownCommand) {
+	if err == nil || err.Error() != "unknown subcommand: unknowncmd" && !errors.Is(err, ErrorUnknownCommand) {
 		t.Errorf("expected unknown command error, got %v", err)
 	}
 }
