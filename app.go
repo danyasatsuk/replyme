@@ -13,8 +13,8 @@ type App struct {
 	Name string
 	// Description of the application, why it is needed
 	Usage string
-	// The author of the application
-	Author string
+	// The authors of the application
+	Authors []string
 	// Your copyright in the form of "YEAR-YEAR author"
 	Copyright string
 	// The license under which you distribute the code
