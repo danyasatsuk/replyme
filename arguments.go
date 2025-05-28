@@ -3,6 +3,7 @@ package replyme
 // Argument is a structure that describes the arguments for your command.
 type Argument struct {
 	Name  string
+	Usage string
 	value string
 }
 
