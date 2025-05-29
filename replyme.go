@@ -6,7 +6,7 @@ import (
 
 // Run starts the REPL
 func Run(app *App) error {
-	err := i18nInit()
+	err := I18nInit()
 	if err != nil {
 		return err
 	}

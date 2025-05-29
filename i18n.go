@@ -76,7 +76,7 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 	return nil
 }
 
-func i18nInit() error {
+func I18nInit() error {
 	bundle = i18n.NewBundle(language.Russian)
 
 	if err := loadAllTOMLLocales(bundle, localeFiles, "locales"); err != nil {
