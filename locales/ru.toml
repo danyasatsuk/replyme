@@ -57,3 +57,47 @@ translation = "пустая команда"
 [[message]]
 id = "inputint_placeholder"
 translation = "Введите число"
+
+[[message]]
+id = "help_flags"
+translation = "Флаги"
+
+[[message]]
+id = "help_subcommands"
+translation = "Подкоманды"
+
+[[message]]
+id = "help_arguments"
+translation = "Аргументы"
+
+[[message]]
+id = "help_authors"
+translation = "Авторы"
+
+[[message]]
+id = "help_license"
+translation = "Лицензия"
+
+[[message]]
+id = "help_flag_type_string"
+translation = "[строка]"
+
+[[message]]
+id = "help_flag_type_int"
+translation = "[число]"
+
+[[message]]
+id = "help_flag_type_bool"
+translation = ""
+
+[[message]]
+id = "help_flag_type_string_array"
+translation = "[массив строк]"
+
+[[message]]
+id = "help_flag_type_int_array"
+translation = "[массив чисел]"
+
+[[message]]
+id = "app_help_usage"
+translation = "Отображает эту информацию"

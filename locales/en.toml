@@ -57,3 +57,47 @@ translation = "empty command"
 [[message]]
 id = "inputint_placeholder"
 translation = "Enter a number"
+
+[[message]]
+id = "help_flags"
+translation = "Flags"
+
+[[message]]
+id = "help_subcommands"
+translation = "Subcommands"
+
+[[message]]
+id = "help_arguments"
+translation = "Arguments"
+
+[[message]]
+id = "help_authors"
+translation = "Authors"
+
+[[message]]
+id = "help_license"
+translation = "License"
+
+[[message]]
+id = "help_flag_type_string"
+translation = "[string]"
+
+[[message]]
+id = "help_flag_type_int"
+translation = "[number]"
+
+[[message]]
+id = "help_flag_type_bool"
+translation = ""
+
+[[message]]
+id = "help_flag_type_string_array"
+translation = "[array of strings]"
+
+[[message]]
+id = "help_flag_type_int_array"
+translation = "[array of numbers]"
+
+[[message]]
+id = "app_help_usage"
+translation = "Displays this information"
