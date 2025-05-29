@@ -126,6 +126,48 @@ func (m *Model) runCommand(command string) error {
 	if err != nil {
 		return err
 	}
+	if len(flow) > 0 {
+		flags := flow[len(flow)-1].Flags
+		if flagI := slices.IndexFunc(flags, func(f Flag) bool {
+			if f.GetName() == "help" {
+				if d, err := f.ParsedValue(); err == nil && d.(bool) && d.(bool) == true {
+					return true
+				}
+			}
+			return false
+		}); flagI != -1 {
+			help, err := HelpCommand(flow[len(flow)-1])
+			if err != nil {
+				m.logsChan <- Log{
+					LogTypeError,
+					command,
+					"ERROR",
+					err,
+					time.Now(),
+				}
+				m.runningCommand = ""
+				m.input.running = false
+				return nil
+			}
+			m.logsChan <- Log{
+				LogTypeMessage,
+				command,
+				help,
+				nil,
+				time.Now(),
+			}
+			m.logsChan <- Log{
+				LogTypeCommandSuccess,
+				command,
+				command,
+				nil,
+				time.Now(),
+			}
+			m.runningCommand = ""
+			m.input.running = false
+			return nil
+		}
+	}
 	for _, cmd := range flow {
 		ctx := createPreContext(cmd, ast)
 		ctx.emitLog = m.emitLog

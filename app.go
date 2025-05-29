@@ -1,5 +1,7 @@
 package replyme
 
+import "golang.org/x/exp/slices"
+
 // AppParams - the structure of the application parameters
 type AppParams struct {
 	// Allows you to turn on the cursor blinking inside the input. It's not working yet, added to the Roadmap.
@@ -72,4 +74,26 @@ func parseFlagSchemaSingle(command *Command) FlagSchema {
 	}
 	allFlags[command.Name] = f
 	return allFlags
+}
+
+func (a *App) setHelpFlags() {
+	a.Commands = setHelpFlag(a.Commands)
+}
+
+func setHelpFlag(commands []*Command) []*Command {
+	for i := range commands {
+		if slices.IndexFunc(commands[i].Flags, func(flag Flag) bool {
+			return flag.GetName() == "help"
+		}) == -1 {
+			commands[i].Flags = append(commands[i].Flags, &FlagValue[bool]{
+				Name:  "help",
+				Alias: "h",
+				Usage: L(i18n_app_help_usage),
+			})
+		}
+		if commands[i].Subcommands != nil && len(commands[i].Subcommands) > 0 {
+			commands[i].Subcommands = setHelpFlag(commands[i].Subcommands)
+		}
+	}
+	return commands
 }

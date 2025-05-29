@@ -2,6 +2,7 @@ package replyme
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -58,6 +59,21 @@ func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if command != "" {
 			if command == "exit" {
 				return m, tea.Quit
+			}
+			if command == "help" {
+				help, err := HelpApp(m.app)
+				if err != nil {
+					m.logs.Add(LogTypeError, fmt.Sprintf("error: %s", err.Error()))
+				}
+				m.logs.Add(LogTypeCommandSuccess, "help")
+				m.logs.Add(LogTypeMessage, help)
+				m.logsViewport.SetContent(m.logs.Render())
+				m.input.text = ""
+				var cmd tea.Cmd
+				var cmd2 tea.Cmd
+				m.logsViewport, cmd = m.logsViewport.Update(msg)
+				m.input, cmd = m.input.Update(msg)
+				return m, tea.Batch(cmd, cmd2)
 			}
 			m.logs.Add(LogTypeCommandRunning, command)
 			m.logsViewport.SetContent(wordwrap.String(m.logs.Render(), m.logsViewport.Width))

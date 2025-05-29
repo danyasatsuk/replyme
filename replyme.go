@@ -10,6 +10,7 @@ func Run(app *App) error {
 	if err != nil {
 		return err
 	}
+	app.setHelpFlags()
 	_, err = tea.NewProgram(CreateModel(app), tea.WithAltScreen()).Run()
 	return err
 }
