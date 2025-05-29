@@ -96,7 +96,28 @@ func runEnd(command *Command, ctx *Context) (err error) {
 	return command.OnEnd(ctx)
 }
 
+func appRunCleaner(app *App) {
+	commandCleaner(app.Commands)
+}
+
+func commandCleaner(commands []*Command) {
+	for _, command := range commands {
+		for _, flag := range command.Flags {
+			flag.Clear()
+		}
+		for _, arg := range command.Arguments {
+			arg.value = ""
+		}
+		if command.Subcommands != nil {
+			commandCleaner(command.Subcommands)
+		}
+	}
+}
+
 func (m *Model) runCommand(command string) error {
+	defer func() {
+		appRunCleaner(m.app)
+	}()
 	ast, err := ParseCommand(createCommandSchema(m.app.Commands), createFlagSchema(m.app.Commands), createArgsSchema(m.app.Commands), command)
 	if err != nil {
 		return err
