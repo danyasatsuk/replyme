@@ -274,6 +274,12 @@ func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
 					return err
 				}
 			}
+			if flag, ok := flags[cmdFlag.GetAlias()]; ok {
+				_, err := cmdFlag.Parse(flag[0].Value)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 	if !subcommand {
