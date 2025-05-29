@@ -24,6 +24,8 @@ type Flag interface {
 	ParsedValue() (interface{}, error)
 	// GetUsage returns the usage of the flag.
 	GetUsage() string
+	// Clear clears the flag.
+	Clear()
 }
 
 // FlagValue is a structure for passing information about flags to a command.
@@ -120,6 +122,13 @@ func (f *FlagValue[T]) Parse(flag string) (interface{}, error) {
 	f.value = parsed
 	f.hasValue = true
 	return parsed, err
+}
+
+// Clear clears the flag.
+func (f *FlagValue[T]) Clear() {
+	f.hasValue = false
+	f.value = *new(T)
+	f.preParsedValue = ""
 }
 
 // Flags is an abbreviation for the type `[]Flag`, which adds additional methods for convenient management.
