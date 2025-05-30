@@ -11,6 +11,6 @@ func Run(app *App) error {
 		return err
 	}
 	app.setHelpFlags()
-	_, err = tea.NewProgram(CreateModel(app), tea.WithAltScreen()).Run()
+	_, err = tea.NewProgram(CreateModel(app), tea.WithAltScreen(), tea.WithMouseAllMotion()).Run()
 	return err
 }

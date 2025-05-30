@@ -58,7 +58,9 @@ type ModelTUI struct {
 }
 
 func createViewport() viewport.Model {
-	return viewport.New(56, 10)
+	v := viewport.New(56, 10)
+	v.MouseWheelEnabled = true
+	return v
 }
 
 func createSpinner() spinner.Model {

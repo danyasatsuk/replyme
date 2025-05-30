@@ -107,6 +107,20 @@ func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m *Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		m.logsViewport.ScrollUp(3)
+	case tea.MouseButtonWheelDown:
+		m.logsViewport.ScrollDown(3)
+	default:
+		//ignore
+	}
+	m.logsViewport, cmd = m.logsViewport.Update(msg)
+	return m, cmd
+}
+
 func (m *Model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
 	select {
 	case l := <-m.logsChan:
@@ -184,6 +198,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleKeyMsg(msg)
 	case Tick:
 		return m.handleTickMsg(msg)
+	case tea.MouseMsg:
+		return m.handleMouseMsg(msg)
 	default:
 		if m.app.Params.EnableInputBlinking {
 			m.input, _ = m.input.Update(msg)
