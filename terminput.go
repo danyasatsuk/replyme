@@ -63,7 +63,7 @@ func (m TerminalInput) Update(msg tea.Msg) (TerminalInput, tea.Cmd) {
 			if m.cursor < len([]rune(m.text)) {
 				m.cursor++
 			}
-		case tea.KeyUp:
+		case tea.KeyShiftUp:
 			if len(m.history) == 0 {
 				break
 			}
@@ -73,7 +73,7 @@ func (m TerminalInput) Update(msg tea.Msg) (TerminalInput, tea.Cmd) {
 				m.cursor = len([]rune(m.text))
 			}
 
-		case tea.KeyDown:
+		case tea.KeyShiftDown:
 			if len(m.history) == 0 {
 				break
 			}
