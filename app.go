@@ -33,13 +33,12 @@ type App struct {
 	Params AppParams
 }
 
-// GetFlagSchema - allows you to get a diagram of all flags in the FlagSchema type
-func (a *App) GetFlagSchema() FlagSchema {
+func (a *App) getFlagSchema() flagSchema {
 	return parseFlagSchema(a.Commands)
 }
 
-func parseFlagSchema(commands Commands) FlagSchema {
-	schema := FlagSchema{}
+func parseFlagSchema(commands Commands) flagSchema {
+	schema := flagSchema{}
 	for _, command := range commands {
 		newSchema := parseFlagSchemaSingle(command)
 		for k, v := range newSchema {
@@ -49,7 +48,7 @@ func parseFlagSchema(commands Commands) FlagSchema {
 	return schema
 }
 
-func parseFlagSchemaSingle(command *Command) FlagSchema {
+func parseFlagSchemaSingle(command *Command) flagSchema {
 	allFlags := make(map[string]map[string]FlagType)
 	f := make(map[string]FlagType)
 	for _, flag := range command.Flags {

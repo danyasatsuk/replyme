@@ -8,11 +8,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type InputResizeMsg struct {
+type inputResizeMsg struct {
 	Delta int
 }
 
-type TerminalInput struct {
+type terminalInput struct {
 	text          string
 	lines         []string
 	cursor        int
@@ -25,10 +25,10 @@ type TerminalInput struct {
 	viewport viewport.Model
 }
 
-func NewTerminalInput() TerminalInput {
+func newTerminalInput() terminalInput {
 	vp := viewport.New(70, 1)
 	vp.SetContent("")
-	return TerminalInput{
+	return terminalInput{
 		cursor:    0,
 		width:     70,
 		viewport:  vp,
@@ -36,11 +36,11 @@ func NewTerminalInput() TerminalInput {
 	}
 }
 
-func (m TerminalInput) Init() tea.Cmd {
+func (m terminalInput) Init() tea.Cmd {
 	return nil
 }
 
-func (m TerminalInput) Update(msg tea.Msg) (TerminalInput, tea.Cmd) {
+func (m terminalInput) Update(msg tea.Msg) (terminalInput, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -109,7 +109,7 @@ func (m TerminalInput) Update(msg tea.Msg) (TerminalInput, tea.Cmd) {
 			delta := len(m.lines) - m.lastLineCount
 			m.lastLineCount = len(m.lines)
 			return m, func() tea.Msg {
-				return InputResizeMsg{Delta: delta}
+				return inputResizeMsg{Delta: delta}
 			}
 		}
 
@@ -129,44 +129,44 @@ func (m TerminalInput) Update(msg tea.Msg) (TerminalInput, tea.Cmd) {
 			delta := len(m.lines) - m.lastLineCount
 			m.lastLineCount = len(m.lines)
 			return m, func() tea.Msg {
-				return InputResizeMsg{Delta: delta}
+				return inputResizeMsg{Delta: delta}
 			}
 		}
 	}
 	return m, nil
 }
 
-func (m TerminalInput) View() string {
+func (m terminalInput) View() string {
 	if m.running {
-		m.viewport.SetContent(GrayStyle(L(i18n_cmd_input_running)))
+		m.viewport.SetContent(styles.GrayStyle(L(i18n_cmd_input_running)))
 	}
 	return m.viewport.View()
 }
 
-func (m TerminalInput) Value() string {
+func (m terminalInput) Value() string {
 	return m.text
 }
 
-func (m TerminalInput) GetLines() int {
+func (m terminalInput) GetLines() int {
 	if len(m.lines) > 10 {
 		return 10
 	}
 	return len(m.lines)
 }
 
-func (m *TerminalInput) recalculateLines() {
+func (m *terminalInput) recalculateLines() {
 	if strings.TrimSpace(m.text) == "" {
-		m.lines = []string{GrayStyle("> " + L(i18n_cmd_input_command))}
+		m.lines = []string{styles.GrayStyle("> " + L(i18n_cmd_input_command))}
 	} else {
 		wrapped := wrapLines(m.text, m.width-2)
 		for i := range wrapped {
-			wrapped[i] = GrayStyle("> ") + wrapped[i]
+			wrapped[i] = styles.GrayStyle("> ") + wrapped[i]
 		}
 		m.lines = wrapped
 	}
 }
 
-func (m TerminalInput) render() string {
+func (m terminalInput) render() string {
 	cursorChar := "▌"
 	runes := []rune(m.text)
 
@@ -179,12 +179,12 @@ func (m TerminalInput) render() string {
 	marked := string(runes[:m.cursor]) + cursorChar + string(runes[m.cursor:])
 
 	if strings.TrimSpace(m.text) == "" {
-		return GrayStyle("> " + L(i18n_cmd_input_command))
+		return styles.GrayStyle("> " + L(i18n_cmd_input_command))
 	}
 
 	wrapped := wrapLines(marked, m.width-2)
 	for i := range wrapped {
-		wrapped[i] = GrayStyle("> ") + wrapped[i]
+		wrapped[i] = styles.GrayStyle("> ") + wrapped[i]
 	}
 	return strings.Join(wrapped, "\n")
 }

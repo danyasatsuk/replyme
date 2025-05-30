@@ -16,7 +16,7 @@ var (
 	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 )
 
-type InputFile struct {
+type inputFile struct {
 	input       textinput.Model
 	IsValidated bool
 	IsExit      bool
@@ -26,32 +26,32 @@ type InputFile struct {
 	statusStyle lipgloss.Style
 }
 
-func InputFileNew() *InputFile {
-	m := &InputFile{
+func inputFileNew() *inputFile {
+	m := &inputFile{
 		input: textinput.New(),
 	}
 	return m
 }
 
-func (m *InputFile) SetParams(p TUIInputFileParams) {
+func (m *inputFile) SetParams(p TUIInputFileParams) {
 	m.params = p
 	m.input.Placeholder = L(i18n_inputfile_placeholder)
 	m.input.Focus()
 }
 
-func (m *InputFile) Init() tea.Cmd {
+func (m *inputFile) Init() tea.Cmd {
 	return nil
 }
 
-func (m *InputFile) Focus() {
+func (m *inputFile) Focus() {
 	m.input.Focus()
 }
 
-func (m *InputFile) Blur() {
+func (m *inputFile) Blur() {
 	m.input.Blur()
 }
 
-func (m *InputFile) Update(msg tea.Msg) (*InputFile, tea.Cmd) {
+func (m *inputFile) Update(msg tea.Msg) (*inputFile, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.Type == tea.KeyInsert && len(msg.String()) > 1 {
@@ -131,7 +131,7 @@ func (m *InputFile) Update(msg tea.Msg) (*InputFile, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *InputFile) View() string {
+func (m *inputFile) View() string {
 	return fmt.Sprintf(`%s
 
 %s
@@ -141,12 +141,12 @@ func (m *InputFile) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View(), m.statusStyle.Render(m.statusLine))
 }
 
-func (m *InputFile) setStatus(text string, style lipgloss.Style) {
+func (m *inputFile) setStatus(text string, style lipgloss.Style) {
 	m.statusLine = text
 	m.statusStyle = style
 }
 
-func (m *InputFile) updateStatus() {
+func (m *inputFile) updateStatus() {
 	path := m.input.Value()
 	absPath, err := filepath.Abs(path)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 func createCommandFlow(app *App, ast *ASTNode) ([]*Command, error) {
 	cmds := make([]*Command, 0)
 	if ast.Subcommands == nil || len(ast.Subcommands) == 0 {
-		cmd, err := app.Commands.GetCommand(ast.Command)
+		cmd, err := app.Commands.getCommand(ast.Command)
 		if err != nil {
 			return nil, err
 		}
@@ -19,7 +19,7 @@ func createCommandFlow(app *App, ast *ASTNode) ([]*Command, error) {
 		}
 		cmds = append(cmds, cmd)
 	} else {
-		cmd, err := app.Commands.GetCommand(ast.Command)
+		cmd, err := app.Commands.getCommand(ast.Command)
 		if err != nil {
 			return nil, err
 		}
@@ -29,7 +29,7 @@ func createCommandFlow(app *App, ast *ASTNode) ([]*Command, error) {
 		}
 		cmds = append(cmds, cmd)
 		for i, subcommand := range ast.Subcommands {
-			cmd, err := app.Commands.GetCommand(subcommand)
+			cmd, err := app.Commands.getCommand(subcommand)
 			if err != nil {
 				return nil, err
 			}
@@ -48,11 +48,11 @@ func runActions(command *Command, ctx *Context) (err error) {
 		if r := recover(); r != nil {
 			switch t := r.(type) {
 			case error:
-				err = NewErrorCommandPanic(t.Error())
+				err = newErrorCommandPanic(t.Error())
 			case string:
-				err = NewErrorCommandPanic(t)
+				err = newErrorCommandPanic(t)
 			default:
-				err = NewErrorCommandPanic("unknown panic")
+				err = newErrorCommandPanic("unknown panic")
 			}
 		}
 	}()
@@ -82,11 +82,11 @@ func runEnd(command *Command, ctx *Context) (err error) {
 		if r := recover(); r != nil {
 			switch t := r.(type) {
 			case error:
-				err = NewErrorCommandPanic(t.Error())
+				err = newErrorCommandPanic(t.Error())
 			case string:
-				err = NewErrorCommandPanic(t)
+				err = newErrorCommandPanic(t)
 			default:
-				err = NewErrorCommandPanic("unknown panic")
+				err = newErrorCommandPanic("unknown panic")
 			}
 		}
 	}()
@@ -114,11 +114,11 @@ func commandCleaner(commands []*Command) {
 	}
 }
 
-func (m *Model) runCommand(command string) error {
+func (m *model) runCommand(command string) error {
 	defer func() {
 		appRunCleaner(m.app)
 	}()
-	ast, err := ParseCommand(createCommandSchema(m.app.Commands), createFlagSchema(m.app.Commands), createArgsSchema(m.app.Commands), command)
+	ast, err := parseCommand(createCommandSchema(m.app.Commands), createFlagSchema(m.app.Commands), createArgsSchema(m.app.Commands), command)
 	if err != nil {
 		return err
 	}
@@ -136,10 +136,10 @@ func (m *Model) runCommand(command string) error {
 			}
 			return false
 		}); flagI != -1 {
-			help, err := HelpCommand(flow[len(flow)-1])
+			help, err := helpCommand(flow[len(flow)-1])
 			if err != nil {
-				m.logsChan <- Log{
-					LogTypeError,
+				m.logsChan <- log{
+					logTypeError,
 					command,
 					"ERROR",
 					err,
@@ -149,15 +149,15 @@ func (m *Model) runCommand(command string) error {
 				m.input.running = false
 				return nil
 			}
-			m.logsChan <- Log{
-				LogTypeMessage,
+			m.logsChan <- log{
+				logTypeMessage,
 				command,
 				help,
 				nil,
 				time.Now(),
 			}
-			m.logsChan <- Log{
-				LogTypeCommandSuccess,
+			m.logsChan <- log{
+				logTypeCommandSuccess,
 				command,
 				command,
 				nil,
@@ -195,8 +195,8 @@ func (m *Model) runCommand(command string) error {
 			return err
 		}
 	}
-	m.logsChan <- Log{
-		LogTypeCommandSuccess,
+	m.logsChan <- log{
+		logTypeCommandSuccess,
 		command,
 		command,
 		nil,
@@ -208,7 +208,7 @@ func (m *Model) runCommand(command string) error {
 }
 
 func runCommand(app *App, ctx *Context, command string) error {
-	ast, err := ParseCommand(createCommandSchema(app.Commands), createFlagSchema(app.Commands), createArgsSchema(app.Commands), command)
+	ast, err := parseCommand(createCommandSchema(app.Commands), createFlagSchema(app.Commands), createArgsSchema(app.Commands), command)
 	if err != nil {
 		return err
 	}

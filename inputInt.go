@@ -8,7 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type InputInt struct {
+type inputInt struct {
 	input       textinput.Model
 	IsValidated bool
 	IsExit      bool
@@ -16,31 +16,31 @@ type InputInt struct {
 	params      TUIInputIntParams
 }
 
-func InputIntNew() *InputInt {
-	return &InputInt{
+func inputIntNew() *inputInt {
+	return &inputInt{
 		input: textinput.New(),
 	}
 }
 
-func (m *InputInt) SetParams(p TUIInputIntParams) {
+func (m *inputInt) SetParams(p TUIInputIntParams) {
 	m.params = p
 	m.input.Placeholder = L(i18n_inputint_placeholder)
 	m.input.Focus()
 }
 
-func (m *InputInt) Init() tea.Cmd {
+func (m *inputInt) Init() tea.Cmd {
 	return nil
 }
 
-func (m *InputInt) Focus() {
+func (m *inputInt) Focus() {
 	m.input.Focus()
 }
 
-func (m *InputInt) Blur() {
+func (m *inputInt) Blur() {
 	m.input.Blur()
 }
 
-func (m *InputInt) Update(msg tea.Msg) (*InputInt, tea.Cmd) {
+func (m *inputInt) Update(msg tea.Msg) (*inputInt, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -78,7 +78,7 @@ func (m *InputInt) Update(msg tea.Msg) (*InputInt, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *InputInt) View() string {
+func (m *inputInt) View() string {
 	return fmt.Sprintf(`%s
 
 %s

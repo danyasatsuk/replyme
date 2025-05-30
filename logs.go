@@ -8,57 +8,56 @@ import (
 	"time"
 )
 
-func (m *Model) emitLog(log LogMsg) {
-	if log.Data == nil {
-		log.Data = []interface{}{}
+func (m *model) emitLog(l logMsg) {
+	if l.Data == nil {
+		l.Data = []interface{}{}
 	}
-	switch log.Status {
-	case LogMsgStatus_Print:
-		m.logsChan <- Log{LogTypeLog, m.runningCommand, log.Content, nil, time.Now()}
-	case LogMsgStatus_Printf:
-		m.logsChan <- Log{LogTypeLog, m.runningCommand, fmt.Sprintf(log.Content, log.Data...), nil, time.Now()}
-	case LogMsgStatus_PrintMarkdown:
+	switch l.Status {
+	case logMsgStatus_Print:
+		m.logsChan <- log{logTypeLog, m.runningCommand, l.Content, nil, time.Now()}
+	case logMsgStatus_Printf:
+		m.logsChan <- log{logTypeLog, m.runningCommand, fmt.Sprintf(l.Content, l.Data...), nil, time.Now()}
+	case logMsgStatus_PrintMarkdown:
 		renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(m.windowHeight))
 		if err != nil {
-			m.logsChan <- Log{LogTypeError, m.runningCommand, fmt.Sprintf("error creating renderer: %v", err), nil, time.Now()}
+			m.logsChan <- log{logTypeError, m.runningCommand, fmt.Sprintf("error creating renderer: %v", err), nil, time.Now()}
 		}
-		render, err := renderer.Render(log.Content)
+		render, err := renderer.Render(l.Content)
 		if err != nil {
-			m.logsChan <- Log{LogTypeError, m.runningCommand, fmt.Sprintf("error render: %v", err), nil, time.Now()}
+			m.logsChan <- log{logTypeError, m.runningCommand, fmt.Sprintf("error render: %v", err), nil, time.Now()}
 		}
-		m.logsChan <- Log{LogTypeLog, m.runningCommand, render, nil, time.Now()}
-	case LogMsgStatus_Warn:
-		m.logsChan <- Log{LogTypeWarn, m.runningCommand, log.Content, nil, time.Now()}
-	case LogMsgStatus_Warnf:
-		m.logsChan <- Log{LogTypeWarn, m.runningCommand, fmt.Sprintf(log.Content, log.Data...), nil, time.Now()}
-	case LogMsgStatus_Error:
-		m.logsChan <- Log{LogTypeError, m.runningCommand, log.Content, nil, time.Now()}
-	case LogMsgStatus_Errorf:
-		m.logsChan <- Log{LogTypeError, m.runningCommand, fmt.Sprintf(log.Content, log.Data...), nil, time.Now()}
+		m.logsChan <- log{logTypeLog, m.runningCommand, render, nil, time.Now()}
+	case logMsgStatus_Warn:
+		m.logsChan <- log{logTypeWarn, m.runningCommand, l.Content, nil, time.Now()}
+	case logMsgStatus_Warnf:
+		m.logsChan <- log{logTypeWarn, m.runningCommand, fmt.Sprintf(l.Content, l.Data...), nil, time.Now()}
+	case logMsgStatus_Error:
+		m.logsChan <- log{logTypeError, m.runningCommand, l.Content, nil, time.Now()}
+	case logMsgStatus_Errorf:
+		m.logsChan <- log{logTypeError, m.runningCommand, fmt.Sprintf(l.Content, l.Data...), nil, time.Now()}
 	}
 }
 
 // LogType is the type of log
-type LogType uint16
+type logType uint16
 
 const (
-	LogTypeCommandRunning LogType = iota
-	LogTypeCommandSuccess
-	LogTypeCommandFailure
-	LogTypeCommandNotFound
-	LogTypeCommandNotEnoughArguments
+	logTypeCommandRunning logType = iota
+	logTypeCommandSuccess
+	logTypeCommandFailure
+	logTypeCommandNotFound
+	logTypeCommandNotEnoughArguments
 
-	LogTypeMessage
-	LogTypePanic
-	LogTypeLog
-	LogTypeDebug
-	LogTypeWarn
-	LogTypeError
+	logTypeMessage
+	logTypePanic
+	logTypeLog
+	logTypeDebug
+	logTypeWarn
+	logTypeError
 )
 
-// Log - a structure for transferring and storing logs inside the REPL
-type Log struct {
-	Type    LogType
+type log struct {
+	Type    logType
 	Command string
 	Message string
 	Error   error
@@ -66,74 +65,73 @@ type Log struct {
 }
 
 func renderRunning(s string) string {
-	return fmt.Sprintf("⏳ %s %s", GrayStyle(">>"), s)
+	return fmt.Sprintf("⏳ %s %s", styles.GrayStyle(">>"), s)
 }
 
 func renderSuccess(s string) string {
-	return fmt.Sprintf("%s %s %s", GreenIcon.Render("✔"), GrayStyle(">>"), s)
+	return fmt.Sprintf("%s %s %s", greenIcon.Render("✔"), styles.GrayStyle(">>"), s)
 }
 
 func renderFailure(s string) string {
-	return fmt.Sprintf("%s %s %s", RedIcon.Render("✖"), GrayStyle(">>"), s)
+	return fmt.Sprintf("%s %s %s", redIcon.Render("✖"), styles.GrayStyle(">>"), s)
 }
 
 func renderPanic(s string) string {
-	return fmt.Sprintf("%s: %s", ErrorHeaderStyle("[PANIC]"), ErrorTextStyle(s))
+	return fmt.Sprintf("%s: %s", styles.ErrorHeaderStyle("[PANIC]"), styles.ErrorTextStyle(s))
 }
 
 func renderLog(s string) string {
-	return fmt.Sprintf("%s: %s", LogStyle("[LOG]"), s)
+	return fmt.Sprintf("%s: %s", styles.LogStyle("[LOG]"), s)
 }
 
 func renderDebug(s string) string {
-	return fmt.Sprintf("%s: %s", DebugStyle("[DEBUG]"), s)
+	return fmt.Sprintf("%s: %s", styles.DebugStyle("[DEBUG]"), s)
 }
 
 func renderWarn(s string) string {
-	return fmt.Sprintf("%s: %s", WarnStyle("[WARN]"), s)
+	return fmt.Sprintf("%s: %s", styles.WarnStyle("[WARN]"), s)
 }
 
 func renderError(s string) string {
-	return fmt.Sprintf("%s: %s", ErrorHeaderStyle("[ERROR]"), ErrorTextStyle(s))
+	return fmt.Sprintf("%s: %s", styles.ErrorHeaderStyle("[ERROR]"), styles.ErrorTextStyle(s))
 }
 
 func renderCommandError(cmd string, s string) string {
-	return fmt.Sprintf("%s %s %s %s", RedIcon.Render("✖"), GrayStyle(">>"), cmd, GrayStyle("("+s+")"))
+	return fmt.Sprintf("%s %s %s %s", redIcon.Render("✖"), styles.GrayStyle(">>"), cmd, styles.GrayStyle("("+s+")"))
 }
 
 // Render - renders the log
-func (l Log) Render() string {
+func (l log) Render() string {
 	switch l.Type {
-	case LogTypeCommandRunning:
+	case logTypeCommandRunning:
 		return renderRunning(l.Command)
-	case LogTypeCommandSuccess:
+	case logTypeCommandSuccess:
 		return renderSuccess(l.Command)
-	case LogTypeCommandFailure:
+	case logTypeCommandFailure:
 		return renderFailure(l.Command)
-	case LogTypeCommandNotFound, LogTypeCommandNotEnoughArguments:
+	case logTypeCommandNotFound, logTypeCommandNotEnoughArguments:
 		return renderCommandError(l.Command, l.Message)
-	case LogTypeMessage:
+	case logTypeMessage:
 		return l.Message
-	case LogTypeLog:
+	case logTypeLog:
 		return renderLog(l.Message)
-	case LogTypeDebug:
+	case logTypeDebug:
 		return renderDebug(l.Message)
-	case LogTypeWarn:
+	case logTypeWarn:
 		return renderWarn(l.Message)
-	case LogTypeError:
+	case logTypeError:
 		return renderError(l.Message)
-	case LogTypePanic:
+	case logTypePanic:
 		return renderPanic(l.Message)
 	default:
 		return l.Message
 	}
 }
 
-// Logs - a slice of logs
-type Logs []Log
+type logs []log
 
 // Render - renders the logs
-func (l *Logs) Render() string {
+func (l *logs) Render() string {
 	var b strings.Builder
 	for _, log := range *l {
 		b.WriteString(log.Render() + "\n")
@@ -142,7 +140,7 @@ func (l *Logs) Render() string {
 }
 
 // RenderLimit - renders the logs with line limit
-func (l *Logs) RenderLimit(limit int) string {
+func (l *logs) RenderLimit(limit int) string {
 	var b strings.Builder
 	if len(*l) < limit {
 		limit = len(*l)
@@ -154,7 +152,7 @@ func (l *Logs) RenderLimit(limit int) string {
 }
 
 // RenderLimitFrom - renders the logs with line limit from a given index
-func (l *Logs) RenderLimitFrom(from, limit int) string {
+func (l *logs) RenderLimitFrom(from, limit int) string {
 	var b strings.Builder
 	if from >= len(*l) {
 		return ""
@@ -169,8 +167,8 @@ func (l *Logs) RenderLimitFrom(from, limit int) string {
 	return b.String()
 }
 
-func (l *Logs) Add(t LogType, message string) {
-	*l = append(*l, Log{
+func (l *logs) Add(t logType, message string) {
+	*l = append(*l, log{
 		Type:    t,
 		Command: message,
 		Message: message,
@@ -179,16 +177,16 @@ func (l *Logs) Add(t LogType, message string) {
 }
 
 // AddLog - adds a log
-func (l *Logs) AddLog(log Log) {
-	if log.Type == LogTypeCommandSuccess || log.Type == LogTypeCommandFailure || log.Type == LogTypeCommandNotFound || log.Type == LogTypeCommandNotEnoughArguments {
-		i := slices.IndexFunc(*l, func(l Log) bool {
-			return log.Command == l.Command && l.Type == LogTypeCommandRunning
+func (l *logs) AddLog(lg log) {
+	if lg.Type == logTypeCommandSuccess || lg.Type == logTypeCommandFailure || lg.Type == logTypeCommandNotFound || lg.Type == logTypeCommandNotEnoughArguments {
+		i := slices.IndexFunc(*l, func(l log) bool {
+			return lg.Command == l.Command && l.Type == logTypeCommandRunning
 		})
 		if i == -1 {
 			return
 		}
-		(*l)[i] = log
+		(*l)[i] = lg
 		return
 	}
-	*l = append(*l, log)
+	*l = append(*l, lg)
 }

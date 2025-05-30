@@ -3,21 +3,18 @@ package replyme
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"log"
 )
 
-type SelectOne struct {
+type selectOne struct {
 	listModel   list.Model
 	IsValidated bool
 	params      TUISelectOneParams
-	Value       TUISelectItem
+	Value       tuiSelectItem
 	IsExit      bool
 }
 
-func (m *SelectOne) SetParams(p TUISelectOneParams) {
+func (m *selectOne) SetParams(p TUISelectOneParams) {
 	m.params = p
-
-	log.Printf("%+v", p)
 
 	items := make([]list.Item, len(p.Items))
 	for i, item := range p.Items {
@@ -29,11 +26,11 @@ func (m *SelectOne) SetParams(p TUISelectOneParams) {
 	m.IsExit = false
 }
 
-func (m *SelectOne) Init() tea.Cmd {
+func (m *selectOne) Init() tea.Cmd {
 	return nil
 }
 
-func (m *SelectOne) Update(msg tea.Msg) (*SelectOne, tea.Cmd) {
+func (m *selectOne) Update(msg tea.Msg) (*selectOne, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -42,7 +39,7 @@ func (m *SelectOne) Update(msg tea.Msg) (*SelectOne, tea.Cmd) {
 			return m, nil
 		case "enter":
 			selected := m.listModel.SelectedItem()
-			if item, ok := selected.(TUISelectItem); ok {
+			if item, ok := selected.(tuiSelectItem); ok {
 				m.Value = item
 				m.IsValidated = true
 			}
@@ -57,12 +54,12 @@ func (m *SelectOne) Update(msg tea.Msg) (*SelectOne, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *SelectOne) View() string {
+func (m *selectOne) View() string {
 	return m.listModel.View()
 }
 
-func SelectOneNew() *SelectOne {
-	m := &SelectOne{
+func selectOneNew() *selectOne {
+	m := &selectOne{
 		listModel: list.New([]list.Item{}, list.NewDefaultDelegate(), 70, 10),
 	}
 	return m

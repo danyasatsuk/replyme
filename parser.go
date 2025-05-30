@@ -8,7 +8,6 @@ import (
 	"unicode"
 )
 
-// FlagType - a specific type of flags
 type FlagType uint16
 
 const (
@@ -19,26 +18,21 @@ const (
 	FlagTypeBool
 )
 
-// FlagSchema - a schema of flags
-type FlagSchema map[string]map[string]FlagType
+type flagSchema map[string]map[string]FlagType
 
-// ArgsSchema - a schema of arguments
-type ArgsSchema map[string][]*Argument
+type argsSchema map[string][]*Argument
 
-// CommandsSchema - a schema of commands
-type CommandsSchema []CommandSchema
+type commandsSchema []commandSchema
 
-// CommandSchema - a schema of command
-type CommandSchema struct {
+type commandSchema struct {
 	Name        string
-	Subcommands []CommandSchema
+	Subcommands []commandSchema
 }
 
-// ParseCommand is a function for parsing commands in ASTNode
-func ParseCommand(
-	commands CommandsSchema,
-	schema FlagSchema,
-	argsSchema ArgsSchema,
+func parseCommand(
+	commands commandsSchema,
+	schema flagSchema,
+	argsSchema argsSchema,
 	input string,
 ) (*ASTNode, error) {
 	ast := &ASTNode{
@@ -56,7 +50,7 @@ func ParseCommand(
 	var lastCmd string
 	inArgs := false
 	var posArgs []string
-	var currentCmdSchema *CommandSchema
+	var currentCmdSchema *commandSchema
 
 	if len(tokens) == 0 {
 		return nil, ErrorCommandEmpty
@@ -131,7 +125,7 @@ func ParseCommand(
 				}
 			}
 			if !found {
-				return nil, NewErrorSubcommandUnknown(token)
+				return nil, newErrorSubcommandUnknown(token)
 			}
 			lastCmd = token
 			ast.CommandTree = append(ast.CommandTree, token)
@@ -141,7 +135,7 @@ func ParseCommand(
 
 	expected := argsSchema[lastCmd]
 	if len(posArgs) < len(expected) {
-		return nil, NewErrorArgumentNotFound(lastCmd)
+		return nil, newErrorArgumentNotFound(lastCmd)
 	}
 	for i, def := range expected {
 		if i < len(posArgs) {
@@ -207,8 +201,8 @@ func tokenize(input string) ([]string, error) {
 	return result, nil
 }
 
-func createFlagSchema(commands Commands) FlagSchema {
-	schema := make(FlagSchema)
+func createFlagSchema(commands Commands) flagSchema {
+	schema := make(flagSchema)
 	for _, command := range commands {
 		for _, flag := range command.Flags {
 			if schema[command.Name] == nil {
@@ -237,8 +231,8 @@ func createFlagSchema(commands Commands) FlagSchema {
 	return schema
 }
 
-func createArgsSchema(commands Commands) ArgsSchema {
-	schema := make(ArgsSchema)
+func createArgsSchema(commands Commands) argsSchema {
+	schema := make(argsSchema)
 	for _, command := range commands {
 		schema[command.Name] = command.Arguments
 		if command.Subcommands != nil && len(command.Subcommands) > 0 {
@@ -251,13 +245,13 @@ func createArgsSchema(commands Commands) ArgsSchema {
 	return schema
 }
 
-func createCommandSchema(commands Commands) CommandsSchema {
-	schema := make(CommandsSchema, len(commands))
+func createCommandSchema(commands Commands) commandsSchema {
+	schema := make(commandsSchema, len(commands))
 	if commands == nil || len(commands) == 0 {
 		return schema
 	}
 	for _, command := range commands {
-		schema = append(schema, CommandSchema{
+		schema = append(schema, commandSchema{
 			Name:        command.Name,
 			Subcommands: createCommandSchema(command.Subcommands),
 		})
@@ -289,7 +283,7 @@ func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
 					return a.Name == argument.Name
 				})
 				if i == -1 {
-					return NewErrorArgumentNotFound(argument.Name)
+					return newErrorArgumentNotFound(argument.Name)
 				}
 				cmd.Arguments[i].value = ast.Arguments[i].Value
 			}
@@ -298,9 +292,7 @@ func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
 	return nil
 }
 
-// ColorCommand - a function for creating a color command (not used yet, to be added later)
-// TODO(unimportant): Add color command
-func ColorCommand(input string) string {
+func colorCommand(input string) string {
 	var result strings.Builder
 	inQuote := false
 	quoteChar := byte(0)
@@ -318,7 +310,7 @@ func ColorCommand(input string) string {
 		} else if inQuote && ch == quoteChar {
 			inQuote = false
 			current.WriteByte(ch)
-			result.WriteString(CMDStringStyle(current.String()))
+			result.WriteString(styles.CMDStringStyle(current.String()))
 			current.Reset()
 			continue
 		}
@@ -332,7 +324,7 @@ func ColorCommand(input string) string {
 			token := current.String()
 			if token != "" {
 				if isFirstToken {
-					result.WriteString(CMDCommandStyle(token))
+					result.WriteString(styles.CMDCommandStyle(token))
 					isFirstToken = false
 				} else {
 					result.WriteString(styleToken(token))
@@ -351,7 +343,7 @@ func ColorCommand(input string) string {
 	if current.Len() > 0 {
 		token := current.String()
 		if isFirstToken {
-			result.WriteString(CMDCommandStyle(token))
+			result.WriteString(styles.CMDCommandStyle(token))
 		} else {
 			result.WriteString(styleToken(token))
 		}
@@ -363,13 +355,13 @@ func ColorCommand(input string) string {
 func styleToken(token string) string {
 	switch {
 	case strings.HasPrefix(token, "--") || strings.HasPrefix(token, "-"):
-		return CMDFlagStyle(token)
+		return styles.CMDFlagStyle(token)
 	case isQuoted(token):
-		return CMDStringStyle(token)
+		return styles.CMDStringStyle(token)
 	case isNumber(token):
-		return CMDFlagValueStyle(token)
+		return styles.CMDFlagValueStyle(token)
 	default:
-		return CMDArgValueStyle(token)
+		return styles.CMDArgValueStyle(token)
 	}
 }
 

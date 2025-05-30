@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type InputText struct {
+type inputText struct {
 	input       textinput.Model
 	IsValidated bool
 	IsExit      bool
@@ -14,7 +14,7 @@ type InputText struct {
 	params      TUIInputTextParams
 }
 
-func (m *InputText) SetParams(p TUIInputTextParams) {
+func (m *inputText) SetParams(p TUIInputTextParams) {
 	m.params = p
 	if m.params.IsPassword {
 		m.input.EchoMode = textinput.EchoPassword
@@ -23,19 +23,19 @@ func (m *InputText) SetParams(p TUIInputTextParams) {
 	m.input.Placeholder = m.params.Placeholder
 }
 
-func (m *InputText) Focus() {
+func (m *inputText) Focus() {
 	m.input.Focus()
 }
 
-func (m *InputText) Blur() {
+func (m *inputText) Blur() {
 	m.input.Blur()
 }
 
-func (m *InputText) Init() tea.Cmd {
+func (m *inputText) Init() tea.Cmd {
 	return nil
 }
 
-func (m *InputText) Update(msg tea.Msg) (*InputText, tea.Cmd) {
+func (m *inputText) Update(msg tea.Msg) (*inputText, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -59,7 +59,7 @@ func (m *InputText) Update(msg tea.Msg) (*InputText, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *InputText) View() string {
+func (m *inputText) View() string {
 	return fmt.Sprintf(`%s
 
 %s
@@ -67,8 +67,8 @@ func (m *InputText) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View())
 }
 
-func InputTextNew() *InputText {
-	m := &InputText{
+func inputTextNew() *inputText {
+	m := &inputText{
 		input: textinput.New(),
 	}
 	return m

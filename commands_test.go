@@ -21,7 +21,7 @@ func TestCommands_GetCommand(t *testing.T) {
 			Usage: faker.Sentence(),
 		},
 	}
-	command, err := cmd.GetCommand(testCmd)
+	command, err := cmd.getCommand(testCmd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestCommands_GetCommandsArray(t *testing.T) {
 		},
 	}
 
-	arr := cmd.GetCommandsArray()
+	arr := cmd.getCommandsArray()
 	if len(arr) != 21 {
 		t.Errorf("got subber length %d, want 21", len(arr))
 	}
@@ -202,7 +202,7 @@ func TestCommands_MustGetCommand(t *testing.T) {
 			Usage: faker.Sentence(),
 		},
 	}
-	command := cmd.MustGetCommand(testCmd)
+	command := cmd.mustGetCommand(testCmd)
 	if command.Name != testCmd {
 		t.Errorf("got command name %q, want %q", command.Name, testCmd)
 	}

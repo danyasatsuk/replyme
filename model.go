@@ -9,29 +9,26 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Model - the BubbleTea model
-type Model struct {
+type model struct {
 	app *App
-	ModelElements
-	ModelLogs
-	ModelTUI
+	modelElements
+	modelLogs
+	modelTUI
 
 	cachedMultiline bool
 }
 
-// ModelElements - the elements of the BubbleTea model
-type ModelElements struct {
+type modelElements struct {
 	logsViewport viewport.Model
-	input        TerminalInput
+	input        terminalInput
 	spinner      spinner.Model
 
 	windowHeight int
 	windowWidth  int
 }
 
-// ModelLogs - the logs of the BubbleTea model
-type ModelLogs struct {
-	logs                *Logs
+type modelLogs struct {
+	logs                *logs
 	history             []string
 	selectedHistoryItem int
 	stdout              *bytes.Buffer
@@ -39,22 +36,21 @@ type ModelLogs struct {
 	runningCommand      string
 	logsDirty           bool
 
-	logsChan chan Log
+	logsChan chan log
 }
 
-// ModelTUI - the TUI of the BubbleTea model
-type ModelTUI struct {
+type modelTUI struct {
 	tuiChan      chan TUIRequest
 	isRunningTUI bool
 	tuiClose     chan bool
 	runningTUI   *TUIRequest
 	tuiViewport  viewport.Model
 
-	selectOne *SelectOne
-	inputText *InputText
-	inputInt  *InputInt
-	inputFile *InputFile
-	confirm   *Confirm
+	selectOne *selectOne
+	inputText *inputText
+	inputInt  *inputInt
+	inputFile *inputFile
+	confirm   *confirm
 }
 
 func createViewport() viewport.Model {
@@ -75,35 +71,35 @@ func createInput() textinput.Model {
 	t := textinput.New()
 	t.Focus()
 	t.Cursor = cursor.New()
-	t.Prompt = GrayStyle(">> ")
+	t.Prompt = styles.GrayStyle(">> ")
 	return t
 }
 
 // CreateModel - create a new BubbleTea model
-func CreateModel(app *App) *Model {
+func createModel(app *App) *model {
 	tuiClose := make(chan bool, 1)
-	m := &Model{
+	m := &model{
 		app: app,
-		ModelTUI: ModelTUI{
+		modelTUI: modelTUI{
 			tuiViewport: createTUIViewport(),
 			tuiChan:     make(chan TUIRequest),
-			selectOne:   SelectOneNew(),
-			inputText:   InputTextNew(),
-			inputInt:    InputIntNew(),
-			inputFile:   InputFileNew(),
-			confirm:     ConfirmNew(tuiClose),
+			selectOne:   selectOneNew(),
+			inputText:   inputTextNew(),
+			inputInt:    inputIntNew(),
+			inputFile:   inputFileNew(),
+			confirm:     confirmNew(tuiClose),
 			tuiClose:    tuiClose,
 		},
-		ModelElements: ModelElements{
+		modelElements: modelElements{
 			logsViewport: createViewport(),
-			input:        NewTerminalInput(),
+			input:        newTerminalInput(),
 			spinner:      createSpinner(),
 		},
-		ModelLogs: ModelLogs{
-			logs:                &Logs{},
+		modelLogs: modelLogs{
+			logs:                &logs{},
 			history:             make([]string, 0),
 			selectedHistoryItem: -1,
-			logsChan:            make(chan Log),
+			logsChan:            make(chan log),
 			stdout:              bytes.NewBuffer(nil),
 			stderr:              bytes.NewBuffer(nil),
 		},

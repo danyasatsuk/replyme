@@ -12,7 +12,6 @@ func (arg *Argument) GetValue() string {
 	return arg.value
 }
 
-// SetValue - method for setting the value of an argument.
-func (arg *Argument) SetValue(v string) {
+func (arg *Argument) setValue(v string) {
 	arg.value = v
 }

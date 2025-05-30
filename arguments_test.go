@@ -14,7 +14,7 @@ func TestArgument(t *testing.T) {
 		value: value,
 	}
 
-	arg.SetValue("test")
+	arg.setValue("test")
 
 	if arg.GetValue() != "test" {
 		t.Fatal("value mismatch")

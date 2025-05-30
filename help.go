@@ -7,35 +7,35 @@ import (
 	"text/template"
 )
 
-type HelpStruct struct {
+type helpStruct struct {
 	Name        string
 	Authors     []string
 	License     string
 	Usage       string
-	Flags       []HelpFlagsStruct
-	Arguments   []HelpArgumentsStruct
-	Subcommands []HelpSubcommandsStruct
-	I18n        HelpI18nStruct
+	Flags       []helpFlagsStruct
+	Arguments   []helpArgumentsStruct
+	Subcommands []helpSubcommandsStruct
+	I18n        helpI18nStruct
 }
 
-type HelpFlagsStruct struct {
+type helpFlagsStruct struct {
 	Name  string
 	Usage string
 	Type  string
 	Alias string
 }
 
-type HelpArgumentsStruct struct {
+type helpArgumentsStruct struct {
 	Name  string
 	Usage string
 }
 
-type HelpSubcommandsStruct struct {
+type helpSubcommandsStruct struct {
 	Name  string
 	Usage string
 }
 
-type HelpI18nStruct struct {
+type helpI18nStruct struct {
 	Authors     string
 	Subcommands string
 	Flags       string
@@ -57,13 +57,13 @@ var HelpCommandTemplate = `{{ Bold .Name }} - {{ .Usage }}
 {{ range .Arguments }}  {{ Purple .Name }} - {{ .Usage }}
 {{ end }}{{ end }}`
 
-func buildHelpFlags(command *Command) []HelpFlagsStruct {
+func buildHelpFlags(command *Command) []helpFlagsStruct {
 	if command.Flags == nil {
 		return nil
 	}
-	flags := make([]HelpFlagsStruct, len(command.Flags))
+	flags := make([]helpFlagsStruct, len(command.Flags))
 	for i, flag := range command.Flags {
-		flags[i] = HelpFlagsStruct{
+		flags[i] = helpFlagsStruct{
 			Name:  flag.GetName(),
 			Usage: flag.GetUsage(),
 			Alias: flag.GetAlias(),
@@ -84,13 +84,13 @@ func buildHelpFlags(command *Command) []HelpFlagsStruct {
 	return flags
 }
 
-func buildHelpArguments(command *Command) []HelpArgumentsStruct {
+func buildHelpArguments(command *Command) []helpArgumentsStruct {
 	if command.Arguments == nil {
 		return nil
 	}
-	args := make([]HelpArgumentsStruct, len(command.Arguments))
+	args := make([]helpArgumentsStruct, len(command.Arguments))
 	for i, arg := range command.Arguments {
-		args[i] = HelpArgumentsStruct{
+		args[i] = helpArgumentsStruct{
 			Name:  arg.Name,
 			Usage: arg.Usage,
 		}
@@ -98,13 +98,13 @@ func buildHelpArguments(command *Command) []HelpArgumentsStruct {
 	return args
 }
 
-func buildHelpSubcommands(command *Command) []HelpSubcommandsStruct {
+func buildHelpSubcommands(command *Command) []helpSubcommandsStruct {
 	if command.Subcommands == nil {
 		return nil
 	}
-	subcommands := make([]HelpSubcommandsStruct, len(command.Subcommands))
+	subcommands := make([]helpSubcommandsStruct, len(command.Subcommands))
 	for i, subcommand := range command.Subcommands {
-		subcommands[i] = HelpSubcommandsStruct{
+		subcommands[i] = helpSubcommandsStruct{
 			Name:  subcommand.Name,
 			Usage: subcommand.Usage,
 		}
@@ -112,13 +112,13 @@ func buildHelpSubcommands(command *Command) []HelpSubcommandsStruct {
 	return subcommands
 }
 
-func buildHelpCommands(app *App) []HelpSubcommandsStruct {
+func buildHelpCommands(app *App) []helpSubcommandsStruct {
 	if app.Commands == nil {
 
 	}
-	commands := make([]HelpSubcommandsStruct, len(app.Commands))
+	commands := make([]helpSubcommandsStruct, len(app.Commands))
 	for i, subcommand := range app.Commands {
-		commands[i] = HelpSubcommandsStruct{
+		commands[i] = helpSubcommandsStruct{
 			Name:  subcommand.Name,
 			Usage: subcommand.Usage,
 		}
@@ -126,8 +126,8 @@ func buildHelpCommands(app *App) []HelpSubcommandsStruct {
 	return commands
 }
 
-func buildHelpI18n() HelpI18nStruct {
-	return HelpI18nStruct{
+func buildHelpI18n() helpI18nStruct {
+	return helpI18nStruct{
 		Authors:     L(i18n_help_authors),
 		Subcommands: L(i18n_help_subcommands),
 		Flags:       L(i18n_help_flags),
@@ -153,9 +153,9 @@ func createTemplate() {
 	}
 }
 
-func HelpCommand(command *Command) (string, error) {
+func helpCommand(command *Command) (string, error) {
 	createTemplate()
-	t := HelpStruct{
+	t := helpStruct{
 		Name:        command.Name,
 		Usage:       command.Usage,
 		Flags:       buildHelpFlags(command),
@@ -176,9 +176,9 @@ func HelpCommand(command *Command) (string, error) {
 	return buf.String(), nil
 }
 
-func HelpApp(app *App) (string, error) {
+func helpApp(app *App) (string, error) {
 	createTemplate()
-	t := HelpStruct{
+	t := helpStruct{
 		Name:        app.Name,
 		Usage:       app.Usage,
 		Authors:     app.Authors,

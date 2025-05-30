@@ -1,20 +1,20 @@
 package replyme
 
 // View - method of the BubbleTea model
-func (m *Model) View() string {
+func (m *model) View() string {
 	if m.isRunningTUI {
 		switch m.runningTUI.Type {
-		case TUIType_SelectOne:
+		case tuiType_SelectOne:
 			m.tuiViewport.SetContent(m.selectOne.View())
-		case TUIType_SelectSeveral:
+		case tuiType_SelectSeveral:
 			//m.tuiViewport.SetContent(m.selectSeveral.View())
-		case TUIType_InputText:
+		case tuiType_InputText:
 			m.tuiViewport.SetContent(m.inputText.View())
-		case TUIType_InputInt:
+		case tuiType_InputInt:
 			m.tuiViewport.SetContent(m.inputInt.View())
-		case TUIType_InputFile:
+		case tuiType_InputFile:
 			m.tuiViewport.SetContent(m.inputFile.View())
-		case TUIType_Confirm:
+		case tuiType_Confirm:
 			m.tuiViewport.SetContent(m.confirm.View())
 		}
 		return m.logsViewport.View() + "\n" + m.tuiViewport.View()

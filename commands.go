@@ -29,14 +29,13 @@ type Command struct {
 // Commands is an abbreviation for the type `[]*replyme.Command`
 type Commands []*Command
 
-// GetCommand - returns the command with the specified name
-func (c Commands) GetCommand(name string) (*Command, error) {
-	cmdsArr := c.GetCommandsArray()
+func (c Commands) getCommand(name string) (*Command, error) {
+	cmdsArr := c.getCommandsArray()
 	i := slices.IndexFunc(cmdsArr, func(command *Command) bool {
 		return command.Name == name
 	})
 	if i == -1 {
-		return nil, NewErrorUnknownCommand(name)
+		return nil, newErrorUnknownCommand(name)
 	}
 	return cmdsArr[i], nil
 }
@@ -54,8 +53,7 @@ func subber(commands *Command) []*Command {
 	return s
 }
 
-// GetCommandsArray - returns the commands as an array
-func (c Commands) GetCommandsArray() []*Command {
+func (c Commands) getCommandsArray() []*Command {
 	cmds := make([]*Command, 0)
 	cmds = append(cmds, c...)
 	for _, command := range c {
@@ -64,8 +62,7 @@ func (c Commands) GetCommandsArray() []*Command {
 	return cmds
 }
 
-// MustGetCommand - returns the command with the specified name
-func (c Commands) MustGetCommand(name string) *Command {
+func (c Commands) mustGetCommand(name string) *Command {
 	i := slices.IndexFunc(c, func(command *Command) bool {
 		return command.Name == name
 	})

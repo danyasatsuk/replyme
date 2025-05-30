@@ -6,11 +6,11 @@ import (
 
 // Run starts the REPL
 func Run(app *App) error {
-	err := I18nInit()
+	err := i18nInit()
 	if err != nil {
 		return err
 	}
 	app.setHelpFlags()
-	_, err = tea.NewProgram(CreateModel(app), tea.WithAltScreen(), tea.WithMouseAllMotion()).Run()
+	_, err = tea.NewProgram(createModel(app), tea.WithAltScreen(), tea.WithMouseAllMotion()).Run()
 	return err
 }

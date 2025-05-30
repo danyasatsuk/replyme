@@ -1,42 +1,42 @@
 package replyme
 
-func (m *Model) emitTUI(t TUIRequest) {
+func (m *model) emitTUI(t TUIRequest) {
 	m.tuiChan <- t
 }
 
-type TUIType uint16
+type tuiType uint16
 
 const (
-	TUIType_SelectOne TUIType = iota
-	TUIType_SelectSeveral
-	TUIType_InputText
-	TUIType_InputInt
-	TUIType_InputFile
-	TUIType_Confirm
+	tuiType_SelectOne tuiType = iota
+	tuiType_SelectSeveral
+	tuiType_InputText
+	tuiType_InputInt
+	tuiType_InputFile
+	tuiType_Confirm
 )
 
-type TUISelectItem struct {
+type tuiSelectItem struct {
 	ID   string
 	Name string
 	Desc string
 }
 
-func (i TUISelectItem) Title() string {
+func (i tuiSelectItem) Title() string {
 	return i.Name
 }
 
-func (i TUISelectItem) Description() string {
+func (i tuiSelectItem) Description() string {
 	return i.Desc
 }
 
-func (i TUISelectItem) FilterValue() string {
+func (i tuiSelectItem) FilterValue() string {
 	return i.Name
 }
 
 type TUISelectOneParams struct {
 	Name        string
 	Description string
-	Items       []TUISelectItem
+	Items       []tuiSelectItem
 }
 
 type TUIInputTextParams struct {
@@ -71,7 +71,7 @@ type TUIConfirmParams struct {
 
 type TUISelectOneResult struct {
 	SelectedID   string
-	SelectedItem TUISelectItem
+	SelectedItem tuiSelectItem
 }
 
 type TUIInputFileResult struct {
@@ -81,7 +81,7 @@ type TUIInputFileResult struct {
 
 type TUIRequest struct {
 	ID       string
-	Type     TUIType
+	Type     tuiType
 	Payload  interface{}
 	Response chan TUIResponse
 }

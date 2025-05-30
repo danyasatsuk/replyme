@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type Confirm struct {
+type confirm struct {
 	IsValidated bool
 	IsExit      bool
 	Value       bool // true = Yes, false = No
@@ -17,23 +17,23 @@ type Confirm struct {
 	close  chan bool
 }
 
-func ConfirmNew(close chan bool) *Confirm {
-	return &Confirm{
+func confirmNew(close chan bool) *confirm {
+	return &confirm{
 		close: close,
 	}
 }
 
-func (m *Confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) {
+func (m *confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) {
 	m.params = p
 	m.cursor = 0
 	m.c = c
 }
 
-func (m *Confirm) Init() tea.Cmd {
+func (m *confirm) Init() tea.Cmd {
 	return nil
 }
 
-func (m *Confirm) Update(msg tea.Msg) (*Confirm, tea.Cmd) {
+func (m *confirm) Update(msg tea.Msg) (*confirm, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -70,7 +70,7 @@ func (m *Confirm) Update(msg tea.Msg) (*Confirm, tea.Cmd) {
 	return m, nil
 }
 
-func (m *Confirm) View() string {
+func (m *confirm) View() string {
 	yes := fmt.Sprintf("[%s]", L(i18n_confirm_view_yes))
 	no := fmt.Sprintf("[%s]", L(i18n_confirm_view_no))
 

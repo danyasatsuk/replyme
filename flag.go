@@ -117,7 +117,7 @@ func (f *FlagValue[T]) Parse(flag string) (interface{}, error) {
 			parsed = any(false).(T)
 		}
 	default:
-		return nil, NewErrorUnknownFlagType(reflect.TypeOf(parsed).String())
+		return nil, newErrorUnknownFlagType(reflect.TypeOf(parsed).String())
 	}
 	f.value = parsed
 	f.hasValue = true

@@ -14,7 +14,7 @@ import (
 func TestContextToInterface(t *testing.T) {
 	ctx := &Context{}
 
-	f := func(c CtxInterface) {}
+	f := func(c ctxInterface) {}
 
 	f(ctx)
 }
@@ -130,7 +130,7 @@ func create() *Context {
 		command:   command,
 		ast:       ast,
 		memory:    new(map[string]interface{}),
-		emitLog:   func(msg LogMsg) {},
+		emitLog:   func(msg logMsg) {},
 		stdout:    bytes.NewBuffer(nil),
 		stderr:    bytes.NewBuffer(nil),
 		startTime: time.Now(),
@@ -193,8 +193,8 @@ func TestContent_GetFlagIntArray(t *testing.T) {
 func TestContent_Print(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_Print &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_Print &&
 			msg.Content == "test" {
 			ok = true
 		}
@@ -208,8 +208,8 @@ func TestContent_Print(t *testing.T) {
 func TestContent_Printf(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_Printf &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_Printf &&
 			msg.Content == "%s" && msg.Data[0] == "test" {
 			ok = true
 		}
@@ -223,8 +223,8 @@ func TestContent_Printf(t *testing.T) {
 func TestContent_PrintMarkdown(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_PrintMarkdown &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_PrintMarkdown &&
 			msg.Content == "t" && msg.Data[0] == "test" {
 			ok = true
 		}
@@ -238,8 +238,8 @@ func TestContent_PrintMarkdown(t *testing.T) {
 func TestContent_Warn(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_Warn &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_Warn &&
 			msg.Content == "t" {
 			ok = true
 		}
@@ -253,8 +253,8 @@ func TestContent_Warn(t *testing.T) {
 func TestContent_Warnf(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_Warnf &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_Warnf &&
 			msg.Content == "t" && msg.Data[0] == "test" {
 			ok = true
 		}
@@ -268,8 +268,8 @@ func TestContent_Warnf(t *testing.T) {
 func TestContent_Error(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_Error &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_Error &&
 			msg.Content == "t" {
 			ok = true
 		}
@@ -283,8 +283,8 @@ func TestContent_Error(t *testing.T) {
 func TestContent_Errorf(t *testing.T) {
 	ok := false
 	context := create()
-	context.emitLog = func(msg LogMsg) {
-		if msg.Status == LogMsgStatus_Errorf &&
+	context.emitLog = func(msg logMsg) {
+		if msg.Status == logMsgStatus_Errorf &&
 			msg.Content == "t" && msg.Data[0] == "test" {
 			ok = true
 		}
@@ -379,9 +379,9 @@ func TestContext_Exec(t *testing.T) {
 }
 
 func TestContent_ExecLive(t *testing.T) {
-	logs := make([]LogMsg, 0)
+	logs := make([]logMsg, 0)
 	context := create()
-	context.emitLog = func(msg LogMsg) {
+	context.emitLog = func(msg logMsg) {
 		logs = append(logs, msg)
 	}
 	err := context.ExecLive("echo", "hello")

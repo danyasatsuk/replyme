@@ -9,26 +9,26 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (m *Model) tuiUpdater(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *model) tuiUpdater(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch m.runningTUI.Type {
-	case TUIType_SelectOne:
+	case tuiType_SelectOne:
 		m.selectOne, cmd = m.selectOne.Update(msg)
-	case TUIType_SelectSeveral:
+	case tuiType_SelectSeveral:
 		// TODO(medium): Implement SelectSeveral and add
-	case TUIType_InputText:
+	case tuiType_InputText:
 		m.inputText, cmd = m.inputText.Update(msg)
-	case TUIType_InputInt:
+	case tuiType_InputInt:
 		m.inputInt, cmd = m.inputInt.Update(msg)
-	case TUIType_InputFile:
+	case tuiType_InputFile:
 		m.inputFile, cmd = m.inputFile.Update(msg)
-	case TUIType_Confirm:
+	case tuiType_Confirm:
 		m.confirm, cmd = m.confirm.Update(msg)
 	}
-	return m, tea.Batch(cmd, Ticker())
+	return m, tea.Batch(cmd, ticker())
 }
 
-func (m *Model) updateLogsHeight() {
+func (m *model) updateLogsHeight() {
 	if m.isRunningTUI {
 		m.logsViewport.Height = 0
 		m.tuiViewport.Height = m.windowHeight
@@ -38,7 +38,7 @@ func (m *Model) updateLogsHeight() {
 	}
 }
 
-func (m *Model) handleWindowSizeMsg(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+func (m *model) handleWindowSizeMsg(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	m.windowHeight = msg.Height
 	m.windowWidth = msg.Width
 	m.updateLogsHeight()
@@ -50,7 +50,7 @@ func (m *Model) handleWindowSizeMsg(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) 
 	return m, cmd
 }
 
-func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c":
 		return m, tea.Quit
@@ -61,12 +61,12 @@ func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 			if command == "help" {
-				help, err := HelpApp(m.app)
+				help, err := helpApp(m.app)
 				if err != nil {
-					m.logs.Add(LogTypeError, fmt.Sprintf("error: %s", err.Error()))
+					m.logs.Add(logTypeError, fmt.Sprintf("error: %s", err.Error()))
 				}
-				m.logs.Add(LogTypeCommandSuccess, "help")
-				m.logs.Add(LogTypeMessage, help)
+				m.logs.Add(logTypeCommandSuccess, "help")
+				m.logs.Add(logTypeMessage, help)
 				m.logsViewport.SetContent(m.logs.Render())
 				m.input.text = ""
 				var cmd tea.Cmd
@@ -75,7 +75,7 @@ func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 				m.input, cmd = m.input.Update(msg)
 				return m, tea.Batch(cmd, cmd2)
 			}
-			m.logs.Add(LogTypeCommandRunning, command)
+			m.logs.Add(logTypeCommandRunning, command)
 			m.logsViewport.SetContent(wordwrap.String(m.logs.Render(), m.logsViewport.Width))
 			m.logsViewport, _ = m.logsViewport.Update(msg)
 			m.runningCommand = command
@@ -85,19 +85,19 @@ func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			go func() {
 				err := m.runCommand(command)
 				if err != nil {
-					typeOfError := LogTypeError
+					typeOfError := logTypeError
 					switch {
 					case errors.Is(err, ErrorUnknownCommand):
-						typeOfError = LogTypeCommandNotFound
+						typeOfError = logTypeCommandNotFound
 					case errors.Is(err, ErrorCommandPanic):
-						typeOfError = LogTypePanic
+						typeOfError = logTypePanic
 					}
-					m.logsChan <- Log{typeOfError, command, err.Error(), err, time.Now()}
-					m.logsChan <- Log{LogTypeCommandFailure, command, err.Error(), err, time.Now()}
+					m.logsChan <- log{typeOfError, command, err.Error(), err, time.Now()}
+					m.logsChan <- log{logTypeCommandFailure, command, err.Error(), err, time.Now()}
 				}
 			}()
 
-			return m, tea.Batch(Ticker())
+			return m, tea.Batch(ticker())
 		}
 	}
 	if m.isRunningTUI {
@@ -107,7 +107,7 @@ func (m *Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+func (m *model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg.Button {
 	case tea.MouseButtonWheelUp:
@@ -121,7 +121,7 @@ func (m *Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *Model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
 	select {
 	case l := <-m.logsChan:
 		l.Message = wordwrap.String(l.Message, m.logsViewport.Width)
@@ -130,12 +130,12 @@ func (m *Model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.logsViewport.SetContent(m.logs.Render())
 		m.logsViewport.GotoBottom()
 		m.logsViewport, _ = m.logsViewport.Update(msg)
-		if l.Type == LogTypeCommandSuccess || l.Type == LogTypeCommandFailure || l.Type == LogTypeCommandNotFound {
+		if l.Type == logTypeCommandSuccess || l.Type == logTypeCommandFailure || l.Type == logTypeCommandNotFound {
 			m.input.running = false
 			m.input, _ = m.input.Update(msg)
-			return m, tea.Batch(Ticker())
+			return m, tea.Batch(ticker())
 		}
-		return m, Ticker()
+		return m, ticker()
 
 	case t := <-m.tuiChan:
 		m.isRunningTUI = true
@@ -146,15 +146,15 @@ func (m *Model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.tuiViewport.Width = m.windowWidth
 		m.tuiViewport, _ = m.tuiViewport.Update(t)
 		switch t.Type {
-		case TUIType_SelectOne:
+		case tuiType_SelectOne:
 			m.selectOne.SetParams(t.Payload.(TUISelectOneParams))
-		case TUIType_InputText:
+		case tuiType_InputText:
 			m.inputText.SetParams(t.Payload.(TUIInputTextParams))
-		case TUIType_InputInt:
+		case tuiType_InputInt:
 			m.inputInt.SetParams(t.Payload.(TUIInputIntParams))
-		case TUIType_InputFile:
+		case tuiType_InputFile:
 			m.inputFile.SetParams(t.Payload.(TUIInputFileParams))
-		case TUIType_Confirm:
+		case tuiType_Confirm:
 			m.confirm.SetParams(t.Payload.(TUIConfirmParams), t.Response)
 		}
 		return m, nil
@@ -167,7 +167,7 @@ func (m *Model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.logsViewport.GotoBottom()
 		m.tuiViewport, _ = m.tuiViewport.Update(msg)
 		m.logsViewport, _ = m.logsViewport.Update(msg)
-		return m, Ticker()
+		return m, ticker()
 
 	default:
 		if m.runningCommand == "" {
@@ -175,28 +175,28 @@ func (m *Model) handleTickMsg(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.input, _ = m.input.Update(msg)
 			return m, nil
 		}
-		return m, Ticker()
+		return m, ticker()
 	}
 }
 
-func (m *Model) updateViewport(msg tea.Msg) tea.Cmd {
+func (m *model) updateViewport(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	m.logsViewport, cmd = m.logsViewport.Update(msg)
 	return cmd
 }
 
 // Update - BubbleTea model method
-func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		return m.handleWindowSizeMsg(msg)
-	case InputResizeMsg:
+	case inputResizeMsg:
 		m.logsViewport.Height -= msg.Delta
 		m.logsViewport, _ = m.logsViewport.Update(msg)
 		return m, nil
 	case tea.KeyMsg:
 		return m.handleKeyMsg(msg)
-	case Tick:
+	case tick:
 		return m.handleTickMsg(msg)
 	case tea.MouseMsg:
 		return m.handleMouseMsg(msg)

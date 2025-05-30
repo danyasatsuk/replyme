@@ -7,25 +7,25 @@ import (
 
 var ErrorUnknownCommand = errors.New("unknown command")
 
-func NewErrorUnknownCommand(cmd string) error {
+func newErrorUnknownCommand(cmd string) error {
 	return fmt.Errorf("%w: %s", ErrorUnknownCommand, cmd)
 }
 
 var ErrorArgumentNotFound = errors.New("argument not found for command")
 
-func NewErrorArgumentNotFound(cmd string) error {
+func newErrorArgumentNotFound(cmd string) error {
 	return fmt.Errorf("%w: %s", ErrorArgumentNotFound, cmd)
 }
 
 var ErrorCommandPanic = errors.New("cmdpanic")
 
-func NewErrorCommandPanic(cmd string) error {
+func newErrorCommandPanic(cmd string) error {
 	return fmt.Errorf("%w: %s", ErrorCommandPanic, cmd)
 }
 
 var ErrorUnknownFlagType = errors.New("unknown flag type")
 
-func NewErrorUnknownFlagType(t string) error {
+func newErrorUnknownFlagType(t string) error {
 	return fmt.Errorf("%w: %s", ErrorUnknownFlagType, t)
 }
 
@@ -33,7 +33,7 @@ var ErrorCommandEmpty = errors.New("command empty")
 
 var ErrorSubcommandUnknown = errors.New("unknown subcommand")
 
-func NewErrorSubcommandUnknown(cmd string) error {
+func newErrorSubcommandUnknown(cmd string) error {
 	return fmt.Errorf("%w: %s", ErrorSubcommandUnknown, cmd)
 }
 

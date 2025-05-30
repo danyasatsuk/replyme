@@ -8,11 +8,11 @@ import (
 
 func TestParseCommand_BasicCommand(t *testing.T) {
 	input := `deploy`
-	commands := CommandsSchema{{Name: "deploy"}}
-	schema := FlagSchema{}
-	argsSchema := ArgsSchema{}
+	commands := commandsSchema{{Name: "deploy"}}
+	schema := flagSchema{}
+	argsSchema := argsSchema{}
 
-	ast, err := ParseCommand(commands, schema, argsSchema, input)
+	ast, err := parseCommand(commands, schema, argsSchema, input)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -23,21 +23,21 @@ func TestParseCommand_BasicCommand(t *testing.T) {
 
 func TestParseCommand_WithFlagAndArgs(t *testing.T) {
 	input := `build --optimize=true main.go`
-	commands := CommandsSchema{{
+	commands := commandsSchema{{
 		Name: "build",
 	}}
-	schema := FlagSchema{
+	schema := flagSchema{
 		"build": {
 			"optimize": FlagTypeBool,
 		},
 	}
-	argsSchema := ArgsSchema{
+	argsSchema := argsSchema{
 		"build": {
 			{Name: "input"},
 		},
 	}
 
-	ast, err := ParseCommand(commands, schema, argsSchema, input)
+	ast, err := parseCommand(commands, schema, argsSchema, input)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -51,20 +51,20 @@ func TestParseCommand_WithFlagAndArgs(t *testing.T) {
 
 func TestParseCommand_WithSubcommands(t *testing.T) {
 	input := `db insert users.json`
-	commands := CommandsSchema{{
+	commands := commandsSchema{{
 		Name: "db",
-		Subcommands: []CommandSchema{{
+		Subcommands: []commandSchema{{
 			Name: "insert",
 		}},
 	}}
-	schema := FlagSchema{}
-	argsSchema := ArgsSchema{
+	schema := flagSchema{}
+	argsSchema := argsSchema{
 		"insert": {
 			{Name: "file"},
 		},
 	}
 
-	ast, err := ParseCommand(commands, schema, argsSchema, input)
+	ast, err := parseCommand(commands, schema, argsSchema, input)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -77,10 +77,10 @@ func TestParseCommand_WithSubcommands(t *testing.T) {
 }
 
 func TestParseCommand_UnknownCommand(t *testing.T) {
-	_, err := ParseCommand(
-		CommandsSchema{{Name: "known"}},
-		FlagSchema{},
-		ArgsSchema{},
+	_, err := parseCommand(
+		commandsSchema{{Name: "known"}},
+		flagSchema{},
+		argsSchema{},
 		"unknowncmd",
 	)
 	if err == nil || err.Error() != "unknown subcommand: unknowncmd" && !errors.Is(err, ErrorUnknownCommand) {

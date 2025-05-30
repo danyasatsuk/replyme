@@ -6,7 +6,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
-	"log"
+	Log "log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,14 +47,14 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 		langName := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
 		tag, err := language.Parse(langName)
 		if err != nil {
-			log.Printf("⚠️ Invalid language tag in file %s: %v", f.Name(), err)
+			Log.Printf("⚠️ Invalid language tag in file %s: %v", f.Name(), err)
 			continue
 		}
 
 		for _, msg := range raw.Messages {
 			id, ok := msg["id"].(string)
 			if !ok {
-				log.Printf("⚠️ Messages without ID skipped: %+v", msg)
+				Log.Printf("⚠️ Messages without ID skipped: %+v", msg)
 				continue
 			}
 
@@ -68,7 +68,7 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 			}
 
 			if err := bundle.AddMessages(tag, message); err != nil {
-				log.Printf("⚠️ couldn't add message %s: %v", id, err)
+				Log.Printf("⚠️ couldn't add message %s: %v", id, err)
 			}
 		}
 	}
@@ -76,7 +76,7 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 	return nil
 }
 
-func I18nInit() error {
+func i18nInit() error {
 	bundle = i18n.NewBundle(language.Russian)
 
 	if err := loadAllTOMLLocales(bundle, localeFiles, "locales"); err != nil {

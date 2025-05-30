@@ -86,7 +86,7 @@ func TestParseFlagSchemaSingle(t *testing.T) {
 			},
 		},
 	}
-	value := FlagSchema{
+	value := flagSchema{
 		"test": {
 			"a": FlagTypeString,
 			"b": FlagTypeInt,

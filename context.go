@@ -11,8 +11,7 @@ import (
 	"time"
 )
 
-// CtxInterface is an interface for describing Context methods, not used in the code, created for the "security" of accounting for all methods.
-type CtxInterface interface {
+type ctxInterface interface {
 	GetName() string
 	GetCommandNameTree() []string
 	GetFlagInt(name string, defaultValue int) int
@@ -43,7 +42,7 @@ type CtxInterface interface {
 	Exec(cmd string, args ...string) (string, string, error)
 	ExecLive(cmd string, args ...string) error
 	ExecSilent(cmd string, args ...string) error
-	streamOutput(r io.Reader, status LogMsgStatus)
+	streamOutput(r io.Reader, status logMsgStatus)
 	SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error)
 	InputText(p *TUIInputTextParams) (string, error)
 	InputInt(p *TUIInputIntParams) (int, error)
@@ -52,21 +51,20 @@ type CtxInterface interface {
 }
 
 // LogMsgStatus is an enum for describing the status of a log message.
-type LogMsgStatus uint16
+type logMsgStatus uint16
 
 const (
-	LogMsgStatus_Print LogMsgStatus = iota
-	LogMsgStatus_Printf
-	LogMsgStatus_PrintMarkdown
-	LogMsgStatus_Warn
-	LogMsgStatus_Warnf
-	LogMsgStatus_Error
-	LogMsgStatus_Errorf
+	logMsgStatus_Print logMsgStatus = iota
+	logMsgStatus_Printf
+	logMsgStatus_PrintMarkdown
+	logMsgStatus_Warn
+	logMsgStatus_Warnf
+	logMsgStatus_Error
+	logMsgStatus_Errorf
 )
 
-// LogMsg is a struct for describing a log message.
-type LogMsg struct {
-	Status  LogMsgStatus
+type logMsg struct {
+	Status  logMsgStatus
 	Content string
 	Time    time.Time
 	Data    []interface{}
@@ -92,18 +90,18 @@ type Context struct {
 	command   *Command
 	ast       *ASTNode
 	memory    *map[string]interface{}
-	emitLog   func(LogMsg)
+	emitLog   func(logMsg)
 	emitTUI   func(TUIRequest)
 	stdout    io.Writer
 	stderr    io.Writer
 	startTime time.Time
 }
 
-func (c *Context) streamOutput(r io.Reader, status LogMsgStatus) {
+func (c *Context) streamOutput(r io.Reader, status logMsgStatus) {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		if c.emitLog != nil {
-			c.emitLog(LogMsg{
+			c.emitLog(logMsg{
 				Status:  status,
 				Content: scanner.Text(),
 				Time:    time.Now(),
@@ -149,8 +147,8 @@ func (c *Context) GetFlagBool(name string) bool {
 
 // Print is a method for printing a message.
 func (c *Context) Print(data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_Print,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_Print,
 		Content: fmt.Sprint(data...),
 		Time:    time.Now(),
 	})
@@ -158,8 +156,8 @@ func (c *Context) Print(data ...interface{}) {
 
 // Printf is a method for printing a formatted message.
 func (c *Context) Printf(format string, data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_Printf,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_Printf,
 		Content: format,
 		Time:    time.Now(),
 		Data:    data,
@@ -168,8 +166,8 @@ func (c *Context) Printf(format string, data ...interface{}) {
 
 // PrintMarkdown is a method for printing a markdown message.
 func (c *Context) PrintMarkdown(markdown string, data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_PrintMarkdown,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_PrintMarkdown,
 		Content: markdown,
 		Time:    time.Now(),
 		Data:    data,
@@ -178,8 +176,8 @@ func (c *Context) PrintMarkdown(markdown string, data ...interface{}) {
 
 // Warn is a method for printing a warning message.
 func (c *Context) Warn(data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_Warn,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_Warn,
 		Content: fmt.Sprint(data...),
 		Time:    time.Now(),
 	})
@@ -187,8 +185,8 @@ func (c *Context) Warn(data ...interface{}) {
 
 // Warnf is a method for printing a formatted warning message.
 func (c *Context) Warnf(format string, data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_Warnf,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_Warnf,
 		Content: format,
 		Time:    time.Now(),
 		Data:    data,
@@ -197,8 +195,8 @@ func (c *Context) Warnf(format string, data ...interface{}) {
 
 // Error is a method for printing an error message.
 func (c *Context) Error(data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_Error,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_Error,
 		Content: fmt.Sprint(data...),
 		Time:    time.Now(),
 	})
@@ -206,8 +204,8 @@ func (c *Context) Error(data ...interface{}) {
 
 // Errorf is a method for printing a formatted error message.
 func (c *Context) Errorf(format string, data ...interface{}) {
-	c.emitLog(LogMsg{
-		Status:  LogMsgStatus_Errorf,
+	c.emitLog(logMsg{
+		Status:  logMsgStatus_Errorf,
 		Content: format,
 		Time:    time.Now(),
 		Data:    data,
@@ -338,8 +336,8 @@ func (c *Context) ExecLive(cmd string, args ...string) error {
 		return err
 	}
 
-	go c.streamOutput(stdoutPipe, LogMsgStatus_Print)
-	go c.streamOutput(stderrPipe, LogMsgStatus_Error)
+	go c.streamOutput(stdoutPipe, logMsgStatus_Print)
+	go c.streamOutput(stderrPipe, logMsgStatus_Error)
 
 	return command.Wait()
 }
@@ -354,7 +352,7 @@ func (c *Context) ExecSilent(cmd string, args ...string) error {
 func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     TUIType_SelectOne,
+		Type:     tuiType_SelectOne,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -372,7 +370,7 @@ func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     TUIType_InputText,
+		Type:     tuiType_InputText,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -390,7 +388,7 @@ func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     TUIType_InputInt,
+		Type:     tuiType_InputInt,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -408,7 +406,7 @@ func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     TUIType_InputFile,
+		Type:     tuiType_InputFile,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -426,7 +424,7 @@ func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 func (c *Context) Confirm(p *TUIConfirmParams) (bool, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     TUIType_Confirm,
+		Type:     tuiType_Confirm,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
