@@ -9,6 +9,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const standardWidth = 56
+const standardHeight = 10
+
 type model struct {
 	app *App
 	modelElements
@@ -54,8 +57,9 @@ type modelTUI struct {
 }
 
 func createViewport() viewport.Model {
-	v := viewport.New(56, 10)
+	v := viewport.New(standardWidth, standardHeight)
 	v.MouseWheelEnabled = true
+
 	return v
 }
 
@@ -64,7 +68,7 @@ func createSpinner() spinner.Model {
 }
 
 func createTUIViewport() viewport.Model {
-	return viewport.New(56, 10)
+	return viewport.New(standardWidth, standardHeight)
 }
 
 func createInput() textinput.Model {
@@ -72,10 +76,10 @@ func createInput() textinput.Model {
 	t.Focus()
 	t.Cursor = cursor.New()
 	t.Prompt = styles.GrayStyle(">> ")
+
 	return t
 }
 
-// CreateModel - create a new BubbleTea model
 func createModel(app *App) *model {
 	tuiClose := make(chan bool, 1)
 	m := &model{
@@ -105,5 +109,6 @@ func createModel(app *App) *model {
 		},
 	}
 	m.tuiViewport.Style = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("32"))
+
 	return m
 }

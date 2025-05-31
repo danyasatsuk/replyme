@@ -40,40 +40,50 @@ func loadAllTOMLLocales(bundle *i18n.Bundle, fs embed.FS, tomlPath string) error
 		var raw struct {
 			Messages []map[string]interface{} `toml:"message"`
 		}
+
 		if err := toml.Unmarshal(data, &raw); err != nil {
 			return fmt.Errorf("failed to parse %s: %w", f.Name(), err)
 		}
 
 		langName := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
 		tag, err := language.Parse(langName)
+
 		if err != nil {
 			Log.Printf("⚠️ Invalid language tag in file %s: %v", f.Name(), err)
+
 			continue
 		}
 
-		for _, msg := range raw.Messages {
-			id, ok := msg["id"].(string)
-			if !ok {
-				Log.Printf("⚠️ Messages without ID skipped: %+v", msg)
-				continue
-			}
-
-			translation, _ := msg["translation"].(string)
-			description, _ := msg["description"].(string)
-
-			message := &i18n.Message{
-				ID:          id,
-				Description: description,
-				Other:       translation,
-			}
-
-			if err := bundle.AddMessages(tag, message); err != nil {
-				Log.Printf("⚠️ couldn't add message %s: %v", id, err)
-			}
-		}
+		parseMessages(raw, tag)
 	}
 
 	return nil
+}
+
+func parseMessages(raw struct {
+	Messages []map[string]interface{} `toml:"message"`
+}, tag language.Tag) {
+	for _, msg := range raw.Messages {
+		id, ok := msg["id"].(string)
+		if !ok {
+			Log.Printf("⚠️ Messages without ID skipped: %+v", msg)
+
+			continue
+		}
+
+		translation, _ := msg["translation"].(string)
+		description, _ := msg["description"].(string)
+
+		message := &i18n.Message{
+			ID:          id,
+			Description: description,
+			Other:       translation,
+		}
+
+		if err := bundle.AddMessages(tag, message); err != nil {
+			Log.Printf("⚠️ couldn't add message %s: %v", id, err)
+		}
+	}
 }
 
 func i18nInit() error {
@@ -86,6 +96,7 @@ func i18nInit() error {
 	langCode := detectSystemLanguageCode()
 
 	active = i18n.NewLocalizer(bundle, langCode)
+
 	return nil
 }
 
@@ -94,6 +105,7 @@ func L(id string) string {
 	if err != nil {
 		return "TRANSLATE NOT FOUND"
 	}
+
 	return l
 }
 
@@ -106,6 +118,7 @@ func detectSystemLanguageCode() string {
 		if lang != "" {
 			return lang
 		}
+
 		return getFromEnvFallback("en")
 	default:
 		return getFromEnvFallback("en")
@@ -119,6 +132,7 @@ func getFromEnvFallback(fallback string) string {
 			return normalizeLangCode(val)
 		}
 	}
+
 	return fallback
 }
 
@@ -127,6 +141,7 @@ func detectMacLang() string {
 	if err != nil {
 		return ""
 	}
+
 	return normalizeLangCode(string(out))
 }
 
@@ -135,5 +150,6 @@ func normalizeLangCode(s string) string {
 	if i := strings.IndexAny(s, "_-."); i > 0 {
 		return s[:i]
 	}
+
 	return s
 }

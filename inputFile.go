@@ -11,6 +11,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const kilobyte = 1024
+
 var (
 	okStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
 	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
@@ -30,6 +32,7 @@ func inputFileNew() *inputFile {
 	m := &inputFile{
 		input: textinput.New(),
 	}
+
 	return m
 }
 
@@ -58,68 +61,18 @@ func (m *inputFile) Update(msg tea.Msg) (*inputFile, tea.Cmd) {
 			drop := strings.Trim(msg.String(), "\"'")
 			m.input.SetValue(drop)
 			m.updateStatus()
+
 			return m, nil
 		}
+
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
+
 			return m, nil
 
 		case "enter":
-			path := m.input.Value()
-			abs, err := filepath.Abs(path)
-			if err != nil {
-				m.setStatus(L(i18n_inputfile_fullpath_error), errorStyle)
-				return m, nil
-			}
-
-			stat, err := os.Stat(abs)
-			if err != nil || stat.IsDir() {
-				m.setStatus(L(i18n_inputfile_file_notfound), errorStyle)
-				return m, nil
-			}
-
-			if len(m.params.Extensions) > 0 {
-				ok := false
-				ext := strings.ToLower(filepath.Ext(abs))
-				for _, allowed := range m.params.Extensions {
-					if strings.ToLower(allowed) == ext {
-						ok = true
-						break
-					}
-				}
-				if !ok {
-					m.setStatus(L(i18n_inputfile_extension_error), errorStyle)
-					return m, nil
-				}
-			}
-
-			if m.params.MaxFileSize > 0 {
-				sizeKB := stat.Size() / 1024
-				if int(sizeKB) > m.params.MaxFileSize {
-					m.setStatus(fmt.Sprintf(L(i18n_inputfile_size_error), sizeKB, m.params.MaxFileSize), errorStyle)
-					return m, nil
-				}
-			}
-
-			var contents []byte
-			if !m.params.DoNotOutput {
-				data, err := os.ReadFile(abs)
-				if err != nil {
-					m.setStatus(L(i18n_inputfile_read_error), errorStyle)
-					return m, nil
-				}
-				contents = data
-			}
-
-			m.Value = TUIInputFileResult{
-				Path: abs,
-				File: contents,
-			}
-			m.IsValidated = true
-			m.input.Reset()
-			m.setStatus(L(i18n_inputfile_success), okStyle)
-			return m, nil
+			return m.onEnter()
 		}
 	}
 
@@ -141,6 +94,84 @@ func (m *inputFile) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View(), m.statusStyle.Render(m.statusLine))
 }
 
+func (m *inputFile) checkPath() (os.FileInfo, string, error) {
+	path := m.input.Value()
+
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		m.setStatus(L(i18n_inputfile_fullpath_error), errorStyle)
+
+		return nil, "", err
+	}
+
+	stat, err := os.Stat(abs)
+	if err != nil || stat.IsDir() {
+		m.setStatus(L(i18n_inputfile_file_notfound), errorStyle)
+
+		return nil, "", err
+	}
+
+	return stat, abs, nil
+}
+
+func (m *inputFile) onEnter() (*inputFile, tea.Cmd) {
+	stat, abs, err := m.checkPath()
+	if err != nil {
+		return m, nil
+	}
+
+	if len(m.params.Extensions) > 0 {
+		ok := false
+		ext := strings.ToLower(filepath.Ext(abs))
+
+		for _, allowed := range m.params.Extensions {
+			if strings.ToLower(allowed) == ext {
+				ok = true
+
+				break
+			}
+		}
+
+		if !ok {
+			m.setStatus(L(i18n_inputfile_extension_error), errorStyle)
+
+			return m, nil
+		}
+	}
+
+	if m.params.MaxFileSize > 0 {
+		sizeKB := stat.Size() / kilobyte
+		if int(sizeKB) > m.params.MaxFileSize {
+			m.setStatus(fmt.Sprintf(L(i18n_inputfile_size_error), sizeKB, m.params.MaxFileSize), errorStyle)
+
+			return m, nil
+		}
+	}
+
+	var contents []byte
+
+	if !m.params.DoNotOutput {
+		data, err := os.ReadFile(abs)
+		if err != nil {
+			m.setStatus(L(i18n_inputfile_read_error), errorStyle)
+
+			return m, nil
+		}
+
+		contents = data
+	}
+
+	m.Value = TUIInputFileResult{
+		Path: abs,
+		File: contents,
+	}
+	m.IsValidated = true
+	m.input.Reset()
+	m.setStatus(L(i18n_inputfile_success), okStyle)
+
+	return m, nil
+}
+
 func (m *inputFile) setStatus(text string, style lipgloss.Style) {
 	m.statusLine = text
 	m.statusStyle = style
@@ -148,11 +179,14 @@ func (m *inputFile) setStatus(text string, style lipgloss.Style) {
 
 func (m *inputFile) updateStatus() {
 	path := m.input.Value()
+
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		m.setStatus(L(i18n_inputfile_path_error), errorStyle)
+
 		return
 	}
+
 	if stat, err := os.Stat(absPath); err == nil && !stat.IsDir() {
 		m.setStatus(absPath, okStyle)
 	} else {

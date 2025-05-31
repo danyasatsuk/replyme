@@ -53,6 +53,7 @@ func (f *FlagValue[T]) ParsedValue() (interface{}, error) {
 	if !f.hasValue {
 		return nil, errors.New("value is nil")
 	}
+
 	return f.value, nil
 }
 
@@ -69,6 +70,7 @@ func (f *FlagValue[T]) GetAlias() string {
 // ValueType returns the type of the value.
 func (f *FlagValue[T]) ValueType() string {
 	var zero T
+
 	return reflect.TypeOf(zero).String()
 }
 
@@ -80,48 +82,89 @@ func (f *FlagValue[T]) Value() string {
 // Parse parses the flag.
 func (f *FlagValue[T]) Parse(flag string) (interface{}, error) {
 	var parsed T
+
 	var err error
 
 	if f.Parser != nil {
 		parsed, err = f.Parser(flag)
+
 		return parsed, err
 	}
+
 	switch any(parsed).(type) {
 	case int:
-		var v int
-		v, err = strconv.Atoi(flag)
-		parsed = any(v).(T)
+		var d interface{}
+		d, err = f.parseInt(flag)
+		parsed = d.(T)
 	case string:
-		parsed = any(flag).(T)
+		var d interface{}
+		d = f.parseString(flag)
+		parsed = d.(T)
 	case []int:
-		parts := strings.Split(flag, ",")
-		var arr []int
-		for _, part := range parts {
-			n, convErr := strconv.Atoi(strings.TrimSpace(part))
-			if convErr != nil {
-				return nil, convErr
-			}
-			arr = append(arr, n)
-		}
-		parsed = any(arr).(T)
+		var d interface{}
+		d, err = f.parseIntArray(flag)
+		parsed = d.(T)
 	case []string:
-		arr := strings.Split(flag, ",")
-		for i := range arr {
-			arr[i] = strings.TrimSpace(arr[i])
-		}
-		parsed = any(arr).(T)
+		var d interface{}
+		d = f.parseStringArray(flag)
+		parsed = d.(T)
 	case bool:
-		if flag == "true" {
-			parsed = any(true).(T)
-		} else {
-			parsed = any(false).(T)
-		}
+		var d interface{}
+		d, err = f.parseBool(flag)
+		parsed = d.(T)
 	default:
 		return nil, newErrorUnknownFlagType(reflect.TypeOf(parsed).String())
 	}
+
 	f.value = parsed
 	f.hasValue = true
+
 	return parsed, err
+}
+
+func (f *FlagValue[T]) parseInt(flag string) (v interface{}, err error) {
+	v, err = strconv.Atoi(flag)
+	if err != nil {
+		return 0, err
+	}
+
+	return
+}
+
+func (f *FlagValue[T]) parseString(flag string) (v interface{}) {
+	return flag
+}
+
+func (f *FlagValue[T]) parseIntArray(flag string) (interface{}, error) {
+	arr := []int{}
+
+	parts := strings.Split(flag, ",")
+
+	for _, part := range parts {
+		n, convErr := strconv.Atoi(strings.TrimSpace(part))
+		if convErr != nil {
+			return nil, convErr
+		}
+
+		arr = append(arr, n)
+	}
+
+	return arr, nil
+}
+
+func (f *FlagValue[T]) parseStringArray(flag string) interface{} {
+	var arr []string
+
+	arr = strings.Split(flag, ",")
+	for i := range arr {
+		arr[i] = strings.TrimSpace(arr[i])
+	}
+
+	return arr
+}
+
+func (f *FlagValue[T]) parseBool(flag string) (v interface{}, err error) {
+	return flag == "true", nil
 }
 
 // Clear clears the flag.
@@ -142,10 +185,12 @@ func (f Flags) GetFlagInt(name string, defaultValue int) int {
 	if i == -1 {
 		return defaultValue
 	}
+
 	p, err := f[i].ParsedValue()
 	if err != nil {
 		return defaultValue
 	}
+
 	return p.(int)
 }
 
@@ -157,10 +202,12 @@ func (f Flags) GetFlagString(name string, defaultValue string) string {
 	if i == -1 {
 		return defaultValue
 	}
+
 	p, err := f[i].ParsedValue()
 	if err != nil {
 		return defaultValue
 	}
+
 	return p.(string)
 }
 
@@ -172,10 +219,12 @@ func (f Flags) GetFlagIntArray(name string) []int {
 	if i == -1 {
 		return []int{}
 	}
+
 	p, err := f[i].ParsedValue()
 	if err != nil {
 		return []int{}
 	}
+
 	return p.([]int)
 }
 
@@ -187,10 +236,12 @@ func (f Flags) GetFlagStringArray(name string) []string {
 	if i == -1 {
 		return []string{}
 	}
+
 	p, err := f[i].ParsedValue()
 	if err != nil {
 		return []string{}
 	}
+
 	return p.([]string)
 }
 
@@ -202,9 +253,11 @@ func (f Flags) GetFlagBool(name string) bool {
 	if i == -1 {
 		return false
 	}
+
 	p, err := f[i].ParsedValue()
 	if err != nil {
 		return false
 	}
+
 	return p.(bool)
 }

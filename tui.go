@@ -7,12 +7,12 @@ func (m *model) emitTUI(t TUIRequest) {
 type tuiType uint16
 
 const (
-	tuiType_SelectOne tuiType = iota
-	tuiType_SelectSeveral
-	tuiType_InputText
-	tuiType_InputInt
-	tuiType_InputFile
-	tuiType_Confirm
+	tuiTypeSelectOne tuiType = iota
+	tuiTypeSelectSeveral
+	tuiTypeInputText
+	tuiTypeInputInt
+	tuiTypeInputFile
+	tuiTypeConfirm
 )
 
 type tuiSelectItem struct {

@@ -17,9 +17,9 @@ type confirm struct {
 	close  chan bool
 }
 
-func confirmNew(close chan bool) *confirm {
+func confirmNew(c chan bool) *confirm {
 	return &confirm{
-		close: close,
+		close: c,
 	}
 }
 
@@ -39,40 +39,46 @@ func (m *confirm) Update(msg tea.Msg) (*confirm, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
+
 			return m, nil
 
 		case "left", "h":
 			m.cursor = 0
+
 			return m, nil
 
 		case "right", "l":
 			m.cursor = 1
+
 			return m, nil
 
 		case "y":
 			m.IsValidated = true
 			m.Value = true
+
 			return m, nil
 
 		case "n":
 			m.IsValidated = true
 			m.Value = false
+
 			return m, nil
 
 		case "enter":
 			m.IsValidated = true
-			m.Value = (m.cursor == 0)
+			m.Value = m.cursor == 0
 			m.c <- TUIResponse{m.Value, nil}
 			m.close <- true
+
 			return m, nil
 		}
 	}
+
 	return m, nil
 }
 
 func (m *confirm) View() string {
-	yes := fmt.Sprintf("[%s]", L(i18n_confirm_view_yes))
-	no := fmt.Sprintf("[%s]", L(i18n_confirm_view_no))
+	var yes, no string
 
 	if m.cursor == 0 {
 		yes = fmt.Sprintf("[> %s <]", L(i18n_confirm_view_yes))

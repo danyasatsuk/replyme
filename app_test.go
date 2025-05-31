@@ -6,16 +6,19 @@ import (
 	"testing"
 )
 
+//nolint:cyclop
 func TestParseFlagSchema(t *testing.T) {
 	commands := make(Commands, 200)
 	for i := range commands {
 		flags := make(Flags, 200)
 		for i := range flags {
 			var flag Flag
+
 			n, err := faker.RandomInt(1, 5)
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			switch n[0] {
 			case 1:
 				flag = &FlagValue[string]{
@@ -38,8 +41,10 @@ func TestParseFlagSchema(t *testing.T) {
 					Name: faker.UUIDHyphenated(),
 				}
 			}
+
 			flags[i] = flag
 		}
+
 		command := &Command{
 			Name:  faker.UUIDHyphenated(),
 			Usage: faker.Sentence(),
@@ -51,16 +56,18 @@ func TestParseFlagSchema(t *testing.T) {
 	schema := parseFlagSchema(commands)
 	cmdLen := 0
 	flagsLen := 0
+
 	for _, v := range schema {
 		cmdLen++
+
 		for range v {
 			flagsLen++
 		}
 	}
+
 	if cmdLen != 200 || flagsLen != 40000 {
 		t.Fatal("parse flag schema failed")
 	}
-	//t.Log(cmdLen, flagsLen)
 }
 
 func TestParseFlagSchemaSingle(t *testing.T) {

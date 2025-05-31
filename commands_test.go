@@ -22,9 +22,11 @@ func TestCommands_GetCommand(t *testing.T) {
 		},
 	}
 	command, err := cmd.getCommand(testCmd)
+
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if command.Name != testCmd {
 		t.Errorf("got command name %q, want %q", command.Name, testCmd)
 	}
@@ -73,9 +75,8 @@ func TestSubber(t *testing.T) {
 	}
 }
 
-func TestCommands_GetCommandsArray(t *testing.T) {
-	testCmd := faker.Word()
-	cmd := Commands{
+var testObj = func(testCmd string) Commands {
+	return Commands{
 		&Command{
 			Name:  faker.Word(),
 			Usage: faker.Sentence(),
@@ -179,6 +180,11 @@ func TestCommands_GetCommandsArray(t *testing.T) {
 			},
 		},
 	}
+}
+
+func TestCommands_GetCommandsArray(t *testing.T) {
+	testCmd := faker.Word()
+	cmd := testObj(testCmd)
 
 	arr := cmd.getCommandsArray()
 	if len(arr) != 21 {
@@ -203,6 +209,7 @@ func TestCommands_MustGetCommand(t *testing.T) {
 		},
 	}
 	command := cmd.mustGetCommand(testCmd)
+
 	if command.Name != testCmd {
 		t.Errorf("got command name %q, want %q", command.Name, testCmd)
 	}

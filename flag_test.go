@@ -55,6 +55,7 @@ func newFlagStringArray() *FlagValue[[]string] {
 	}
 }
 
+//nolint:cyclop
 func TestFlagValue_ParsedValue(t *testing.T) {
 	fInt := newFlagInt()
 	fString := newFlagString()
@@ -65,15 +66,19 @@ func TestFlagValue_ParsedValue(t *testing.T) {
 	if d, err := fInt.ParsedValue(); err != nil || d != 10 {
 		t.Fatalf("failed to parse int: %v", err)
 	}
+
 	if d, err := fString.ParsedValue(); err != nil || d != "test" {
 		t.Fatalf("failed to parse string: %v", err)
 	}
+
 	if d, err := fBool.ParsedValue(); err != nil || d != true {
 		t.Fatalf("failed to parse bool: %v", err)
 	}
+
 	if d, err := fIntArray.ParsedValue(); err != nil || slices.Equal(d.([]int), []int{1, 2, 3}) != true {
 		t.Fatalf("failed to parse int array: %v", err)
 	}
+
 	if d, err := fStringArray.ParsedValue(); err != nil || slices.Equal(d.([]string), []string{"a", "b", "c"}) != true {
 		t.Fatalf("failed to parse string array: %v", err)
 	}
@@ -89,15 +94,19 @@ func TestFlagValue_ValueType(t *testing.T) {
 	if d := fInt.ValueType(); d != "int" {
 		t.Fatalf("failed to get int type: %v", d)
 	}
+
 	if d := fString.ValueType(); d != "string" {
 		t.Fatalf("failed to get string type: %v", d)
 	}
+
 	if d := fBool.ValueType(); d != "bool" {
 		t.Fatalf("failed to get bool type: %v", d)
 	}
+
 	if d := fIntArray.ValueType(); d != "[]int" {
 		t.Fatalf("failed to get int array type: %v", d)
 	}
+
 	if d := fStringArray.ValueType(); d != "[]string" {
 		t.Fatalf("failed to get string array type: %v", d)
 	}
@@ -107,6 +116,7 @@ func TestFlagValue_ParseString(t *testing.T) {
 	f := &FlagValue[string]{
 		Name: "test",
 	}
+
 	parse, err := f.Parse("test")
 	if err != nil {
 		t.Fatal(err)
@@ -194,23 +204,28 @@ func newFlags() Flags {
 		value:          []string{"a", "b", "c"},
 		hasValue:       true,
 	})
+
 	return flags
 }
 
 func TestFlags_GetFlag(t *testing.T) {
 	flags := newFlags()
+
 	i := flags.GetFlagInt("inttest", 0)
 	if i != 10 {
 		t.Fatalf("failed to get int: %v", i)
 	}
+
 	s := flags.GetFlagString("stringtest", "")
 	if s != "test" {
 		t.Fatalf("failed to get string: %v", s)
 	}
+
 	ia := flags.GetFlagIntArray("intarraytest")
 	if slices.Equal(ia, []int{1, 2, 3}) != true {
 		t.Fatalf("failed to get int array: %v", ia)
 	}
+
 	sa := flags.GetFlagStringArray("stringarraytest")
 	if slices.Equal(sa, []string{"a", "b", "c"}) != true {
 		t.Fatalf("failed to get string array: %v", sa)

@@ -29,6 +29,7 @@ type commandSchema struct {
 	Subcommands []commandSchema
 }
 
+//nolint:gocognit,cyclop,funlen
 func parseCommand(
 	commands commandsSchema,
 	schema flagSchema,
@@ -47,21 +48,28 @@ func parseCommand(
 	}
 
 	skip := -1
+
 	var lastCmd string
+
 	inArgs := false
+
 	var posArgs []string
+
 	var currentCmdSchema *commandSchema
 
 	if len(tokens) == 0 {
 		return nil, ErrorCommandEmpty
 	}
+
 	first := tokens[0]
 	for i := range commands {
 		if commands[i].Name == first {
 			currentCmdSchema = &commands[i]
+
 			break
 		}
 	}
+
 	if currentCmdSchema == nil {
 		return nil, fmt.Errorf("%w: %s", ErrorUnknownCommand, first)
 	}
@@ -72,29 +80,38 @@ func parseCommand(
 
 	for i := 1; i < len(tokens); i++ {
 		token := tokens[i]
+
 		if skip == i {
 			continue
 		}
+
 		if token == "--" {
 			inArgs = true
+
 			continue
 		}
+
 		if inArgs {
 			posArgs = append(posArgs, token)
+
 			continue
 		}
-		if strings.HasPrefix(token, "-") {
+
+		if strings.HasPrefix(token, "-") { //nolint:nestif
 			var name, value string
+
 			if strings.Contains(token, "=") {
-				parts := strings.SplitN(token, "=", 2)
+				parts := strings.SplitN(token, "=", 2) //nolint:mnd
 				name = strings.TrimLeft(parts[0], "-")
 				value = parts[1]
 			} else {
 				name = strings.TrimLeft(token, "-")
 				flagType := schema[lastCmd][name]
+
 				if flagType == 0 {
 					flagType = schema["global"][name]
 				}
+
 				if flagType == FlagTypeBool || i+1 >= len(tokens) || strings.HasPrefix(tokens[i+1], "-") {
 					value = "true"
 				} else {
@@ -102,31 +119,39 @@ func parseCommand(
 					skip = i + 1
 				}
 			}
+
 			if ast.Flags[lastCmd] == nil {
 				ast.Flags[lastCmd] = map[string][]ASTFlag{}
 			}
+
 			flagType := schema[lastCmd][name]
 			if flagType == 0 {
 				flagType = schema["global"][name]
 			}
+
 			ast.Flags[lastCmd][name] = append(ast.Flags[lastCmd][name], ASTFlag{Type: flagType, Value: value})
 		} else {
 			if len(currentCmdSchema.Subcommands) == 0 {
 				posArgs = append(posArgs, token)
+
 				continue
 			}
 
 			found := false
+
 			for j := range currentCmdSchema.Subcommands {
 				if currentCmdSchema.Subcommands[j].Name == token {
 					currentCmdSchema = &currentCmdSchema.Subcommands[j]
 					found = true
+
 					break
 				}
 			}
+
 			if !found {
 				return nil, newErrorSubcommandUnknown(token)
 			}
+
 			lastCmd = token
 			ast.CommandTree = append(ast.CommandTree, token)
 			ast.Subcommands = append(ast.Subcommands, token)
@@ -137,27 +162,36 @@ func parseCommand(
 	if len(posArgs) < len(expected) {
 		return nil, newErrorArgumentNotFound(lastCmd)
 	}
+
 	for i, def := range expected {
 		if i < len(posArgs) {
 			ast.Arguments = append(ast.Arguments, ASTArgument{Name: def.Name, Value: posArgs[i]})
 		}
 	}
+
 	ast.Args = posArgs
 	ast.FullCommand = input
+
 	return ast, nil
 }
 
+//nolint:cyclop
 func tokenize(input string) ([]string, error) {
 	var result []string
+
 	var current strings.Builder
+
 	var inQuote bool
+
 	var quoteChar rune
+
 	var escape bool
 
 	for _, r := range input {
 		switch {
 		case escape:
 			current.WriteRune(r)
+
 			escape = false
 
 		case r == '\\':
@@ -191,9 +225,11 @@ func tokenize(input string) ([]string, error) {
 	if inQuote {
 		return nil, ErrorCommandUnclosedQuotes
 	}
+
 	if escape {
 		return nil, ErrorIncompleteEscapeSequence
 	}
+
 	if current.Len() > 0 {
 		result = append(result, current.String())
 	}
@@ -201,13 +237,16 @@ func tokenize(input string) ([]string, error) {
 	return result, nil
 }
 
+//nolint:cyclop
 func createFlagSchema(commands Commands) flagSchema {
 	schema := make(flagSchema)
+
 	for _, command := range commands {
 		for _, flag := range command.Flags {
 			if schema[command.Name] == nil {
 				schema[command.Name] = make(map[string]FlagType)
 			}
+
 			switch flag.ValueType() {
 			case "string":
 				schema[command.Name][flag.GetName()] = FlagTypeString
@@ -221,6 +260,7 @@ func createFlagSchema(commands Commands) flagSchema {
 				schema[command.Name][flag.GetName()] = FlagTypeBool
 			}
 		}
+
 		if command.Subcommands != nil && len(command.Subcommands) > 0 {
 			newSchema := createFlagSchema(command.Subcommands)
 			for k, v := range newSchema {
@@ -228,6 +268,7 @@ func createFlagSchema(commands Commands) flagSchema {
 			}
 		}
 	}
+
 	return schema
 }
 
@@ -235,6 +276,7 @@ func createArgsSchema(commands Commands) argsSchema {
 	schema := make(argsSchema)
 	for _, command := range commands {
 		schema[command.Name] = command.Arguments
+
 		if command.Subcommands != nil && len(command.Subcommands) > 0 {
 			newSchema := createArgsSchema(command.Subcommands)
 			for k, v := range newSchema {
@@ -242,6 +284,7 @@ func createArgsSchema(commands Commands) argsSchema {
 			}
 		}
 	}
+
 	return schema
 }
 
@@ -250,17 +293,20 @@ func createCommandSchema(commands Commands) commandsSchema {
 	if commands == nil || len(commands) == 0 {
 		return schema
 	}
+
 	for _, command := range commands {
 		schema = append(schema, commandSchema{
 			Name:        command.Name,
 			Subcommands: createCommandSchema(command.Subcommands),
 		})
 	}
+
 	return schema
 }
 
+//nolint:cyclop
 func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
-	if flags, ok := ast.Flags[cmd.Name]; ok {
+	if flags, ok := ast.Flags[cmd.Name]; ok { //nolint:nestif
 		for _, cmdFlag := range cmd.Flags {
 			if flag, ok := flags[cmdFlag.GetName()]; ok {
 				_, err := cmdFlag.Parse(flag[0].Value)
@@ -268,6 +314,7 @@ func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
 					return err
 				}
 			}
+
 			if flag, ok := flags[cmdFlag.GetAlias()]; ok {
 				_, err := cmdFlag.Parse(flag[0].Value)
 				if err != nil {
@@ -276,6 +323,7 @@ func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
 			}
 		}
 	}
+
 	if !subcommand {
 		if cmd.Arguments != nil && len(cmd.Arguments) > 0 {
 			for _, argument := range cmd.Arguments {
@@ -285,18 +333,25 @@ func insertDataInCommand(cmd *Command, ast *ASTNode, subcommand bool) error {
 				if i == -1 {
 					return newErrorArgumentNotFound(argument.Name)
 				}
+
 				cmd.Arguments[i].value = ast.Arguments[i].Value
 			}
 		}
 	}
+
 	return nil
 }
 
+//nolint:cyclop,funlen
 func colorCommand(input string) string {
 	var result strings.Builder
+
 	inQuote := false
+
 	quoteChar := byte(0)
+
 	current := strings.Builder{}
+
 	isFirstToken := true
 
 	for i := 0; i < len(input); i++ {
@@ -306,34 +361,41 @@ func colorCommand(input string) string {
 			inQuote = true
 			quoteChar = ch
 			current.WriteByte(ch)
+
 			continue
 		} else if inQuote && ch == quoteChar {
 			inQuote = false
+
 			current.WriteByte(ch)
 			result.WriteString(styles.CMDStringStyle(current.String()))
 			current.Reset()
+
 			continue
 		}
 
 		if inQuote {
 			current.WriteByte(ch)
+
 			continue
 		}
 
-		if ch == ' ' {
+		if ch == ' ' { //nolint:nestif
 			token := current.String()
 			if token != "" {
 				if isFirstToken {
 					result.WriteString(styles.CMDCommandStyle(token))
+
 					isFirstToken = false
 				} else {
 					result.WriteString(styleToken(token))
 				}
+
 				result.WriteByte(' ')
 				current.Reset()
 			} else {
 				result.WriteByte(' ')
 			}
+
 			continue
 		}
 
@@ -372,5 +434,6 @@ func isQuoted(s string) bool {
 
 func isNumber(s string) bool {
 	_, err := strconv.Atoi(s)
+
 	return err == nil
 }

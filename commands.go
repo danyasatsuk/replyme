@@ -4,7 +4,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// Command - the structure for creating your command
+// Command - the structure for creating your command.
 type Command struct {
 	// Command name
 	Name string
@@ -26,40 +26,47 @@ type Command struct {
 	OnEnd func(ctx *Context) error
 }
 
-// Commands is an abbreviation for the type `[]*replyme.Command`
+// Commands is an abbreviation for the type `[]*replyme.Command`.
 type Commands []*Command
 
 func (c Commands) getCommand(name string) (*Command, error) {
-	cmdsArr := c.getCommandsArray()
-	i := slices.IndexFunc(cmdsArr, func(command *Command) bool {
+	commandsArr := c.getCommandsArray()
+	i := slices.IndexFunc(commandsArr, func(command *Command) bool {
 		return command.Name == name
 	})
+
 	if i == -1 {
 		return nil, newErrorUnknownCommand(name)
 	}
-	return cmdsArr[i], nil
+
+	return commandsArr[i], nil
 }
 
 func subber(commands *Command) []*Command {
 	s := make([]*Command, 0)
+
 	if commands.Subcommands != nil {
 		for _, subcommand := range commands.Subcommands {
 			if subcommand.Subcommands != nil {
 				s = append(s, subber(subcommand)...)
 			}
+
 			s = append(s, subcommand)
 		}
 	}
+
 	return s
 }
 
 func (c Commands) getCommandsArray() []*Command {
-	cmds := make([]*Command, 0)
-	cmds = append(cmds, c...)
+	commands := make([]*Command, 0)
+	commands = append(commands, c...)
+
 	for _, command := range c {
-		cmds = append(cmds, subber(command)...)
+		commands = append(commands, subber(command)...)
 	}
-	return cmds
+
+	return commands
 }
 
 func (c Commands) mustGetCommand(name string) *Command {
@@ -69,5 +76,6 @@ func (c Commands) mustGetCommand(name string) *Command {
 	if i == -1 {
 		panic("unknown command: " + name)
 	}
+
 	return c[i]
 }

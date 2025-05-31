@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type ctxInterface interface {
+type ctxInterface interface { //nolint:interfacebloat
 	GetName() string
 	GetCommandNameTree() []string
 	GetFlagInt(name string, defaultValue int) int
@@ -54,13 +54,13 @@ type ctxInterface interface {
 type logMsgStatus uint16
 
 const (
-	logMsgStatus_Print logMsgStatus = iota
-	logMsgStatus_Printf
-	logMsgStatus_PrintMarkdown
-	logMsgStatus_Warn
-	logMsgStatus_Warnf
-	logMsgStatus_Error
-	logMsgStatus_Errorf
+	logMsgStatusPrint logMsgStatus = iota
+	logMsgStatusPrintf
+	logMsgStatusPrintMarkdown
+	logMsgStatusWarn
+	logMsgStatusWarnf
+	logMsgStatusError
+	logMsgStatusErrorf
 )
 
 type logMsg struct {
@@ -83,7 +83,7 @@ func createPreContext(command *Command, ast *ASTNode) *Context {
 	}
 }
 
-// Context - the structure that is passed when executing the functions of the command
+// Context - the structure that is passed when executing the functions of the command.
 type Context struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
@@ -97,20 +97,7 @@ type Context struct {
 	startTime time.Time
 }
 
-func (c *Context) streamOutput(r io.Reader, status logMsgStatus) {
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		if c.emitLog != nil {
-			c.emitLog(logMsg{
-				Status:  status,
-				Content: scanner.Text(),
-				Time:    time.Now(),
-			})
-		}
-	}
-}
-
-// GetName - returns the name of the command
+// GetName - returns the name of the command.
 func (c *Context) GetName() string {
 	return c.command.Name
 }
@@ -148,7 +135,7 @@ func (c *Context) GetFlagBool(name string) bool {
 // Print is a method for printing a message.
 func (c *Context) Print(data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_Print,
+		Status:  logMsgStatusPrint,
 		Content: fmt.Sprint(data...),
 		Time:    time.Now(),
 	})
@@ -157,7 +144,7 @@ func (c *Context) Print(data ...interface{}) {
 // Printf is a method for printing a formatted message.
 func (c *Context) Printf(format string, data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_Printf,
+		Status:  logMsgStatusPrintf,
 		Content: format,
 		Time:    time.Now(),
 		Data:    data,
@@ -167,7 +154,7 @@ func (c *Context) Printf(format string, data ...interface{}) {
 // PrintMarkdown is a method for printing a markdown message.
 func (c *Context) PrintMarkdown(markdown string, data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_PrintMarkdown,
+		Status:  logMsgStatusPrintMarkdown,
 		Content: markdown,
 		Time:    time.Now(),
 		Data:    data,
@@ -177,7 +164,7 @@ func (c *Context) PrintMarkdown(markdown string, data ...interface{}) {
 // Warn is a method for printing a warning message.
 func (c *Context) Warn(data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_Warn,
+		Status:  logMsgStatusWarn,
 		Content: fmt.Sprint(data...),
 		Time:    time.Now(),
 	})
@@ -186,7 +173,7 @@ func (c *Context) Warn(data ...interface{}) {
 // Warnf is a method for printing a formatted warning message.
 func (c *Context) Warnf(format string, data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_Warnf,
+		Status:  logMsgStatusWarnf,
 		Content: format,
 		Time:    time.Now(),
 		Data:    data,
@@ -196,7 +183,7 @@ func (c *Context) Warnf(format string, data ...interface{}) {
 // Error is a method for printing an error message.
 func (c *Context) Error(data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_Error,
+		Status:  logMsgStatusError,
 		Content: fmt.Sprint(data...),
 		Time:    time.Now(),
 	})
@@ -205,7 +192,7 @@ func (c *Context) Error(data ...interface{}) {
 // Errorf is a method for printing a formatted error message.
 func (c *Context) Errorf(format string, data ...interface{}) {
 	c.emitLog(logMsg{
-		Status:  logMsgStatus_Errorf,
+		Status:  logMsgStatusErrorf,
 		Content: format,
 		Time:    time.Now(),
 		Data:    data,
@@ -263,6 +250,7 @@ func (c *Context) Set(key string, value interface{}) {
 		newMem := make(map[string]interface{})
 		c.memory = &newMem
 	}
+
 	(*c.memory)[key] = value
 }
 
@@ -278,6 +266,7 @@ func (c *Context) Get(key string) interface{} {
 	if c.memory != nil {
 		return (*c.memory)[key]
 	}
+
 	return nil
 }
 
@@ -290,6 +279,7 @@ func (c *Context) MustGetString(key string) string {
 			}
 		}
 	}
+
 	return ""
 }
 
@@ -302,6 +292,7 @@ func (c *Context) MustGetInt(key string) int {
 			}
 		}
 	}
+
 	return 0
 }
 
@@ -310,12 +301,14 @@ func (c *Context) Exec(cmd string, args ...string) (string, string, error) {
 	command := exec.CommandContext(c.ctx, cmd, args...)
 
 	var stdout bytes.Buffer
+
 	var stderr bytes.Buffer
 
 	command.Stdout = &stdout
 	command.Stderr = &stderr
 
 	err := command.Run()
+
 	return stdout.String(), stderr.String(), err
 }
 
@@ -327,6 +320,7 @@ func (c *Context) ExecLive(cmd string, args ...string) error {
 	if err != nil {
 		return err
 	}
+
 	stderrPipe, err := command.StderrPipe()
 	if err != nil {
 		return err
@@ -336,8 +330,8 @@ func (c *Context) ExecLive(cmd string, args ...string) error {
 		return err
 	}
 
-	go c.streamOutput(stdoutPipe, logMsgStatus_Print)
-	go c.streamOutput(stderrPipe, logMsgStatus_Error)
+	go c.streamOutput(stdoutPipe, logMsgStatusPrint)
+	go c.streamOutput(stderrPipe, logMsgStatusError)
 
 	return command.Wait()
 }
@@ -345,6 +339,7 @@ func (c *Context) ExecLive(cmd string, args ...string) error {
 // ExecSilent is a method for executing a shell command silently.
 func (c *Context) ExecSilent(cmd string, args ...string) error {
 	command := exec.CommandContext(c.ctx, cmd, args...)
+
 	return command.Run()
 }
 
@@ -352,7 +347,7 @@ func (c *Context) ExecSilent(cmd string, args ...string) error {
 func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     tuiType_SelectOne,
+		Type:     tuiTypeSelectOne,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -363,6 +358,7 @@ func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 	if res.Err != nil {
 		return TUISelectOneResult{}, res.Err
 	}
+
 	return res.Value.(TUISelectOneResult), nil
 }
 
@@ -370,7 +366,7 @@ func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     tuiType_InputText,
+		Type:     tuiTypeInputText,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -381,6 +377,7 @@ func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 	if res.Err != nil {
 		return "", res.Err
 	}
+
 	return res.Value.(string), nil
 }
 
@@ -388,7 +385,7 @@ func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     tuiType_InputInt,
+		Type:     tuiTypeInputInt,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -399,6 +396,7 @@ func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 	if res.Err != nil {
 		return 0, res.Err
 	}
+
 	return res.Value.(int), nil
 }
 
@@ -406,7 +404,7 @@ func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     tuiType_InputFile,
+		Type:     tuiTypeInputFile,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -417,6 +415,7 @@ func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 	if res.Err != nil {
 		return TUIInputFileResult{}, res.Err
 	}
+
 	return res.Value.(TUIInputFileResult), nil
 }
 
@@ -424,7 +423,7 @@ func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 func (c *Context) Confirm(p *TUIConfirmParams) (bool, error) {
 	req := TUIRequest{
 		ID:       uuid.NewString(),
-		Type:     tuiType_Confirm,
+		Type:     tuiTypeConfirm,
 		Payload:  *p,
 		Response: make(chan TUIResponse),
 	}
@@ -435,5 +434,19 @@ func (c *Context) Confirm(p *TUIConfirmParams) (bool, error) {
 	if res.Err != nil {
 		return false, res.Err
 	}
+
 	return res.Value.(bool), nil
+}
+
+func (c *Context) streamOutput(r io.Reader, status logMsgStatus) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		if c.emitLog != nil {
+			c.emitLog(logMsg{
+				Status:  status,
+				Content: scanner.Text(),
+				Time:    time.Now(),
+			})
+		}
+	}
 }

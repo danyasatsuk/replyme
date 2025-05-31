@@ -2,14 +2,15 @@ package replyme
 
 import "golang.org/x/exp/slices"
 
-// AppParams - the structure of the application parameters
+// AppParams - the structure of the application parameters.
 type AppParams struct {
 	// Allows you to turn on the cursor blinking inside the input. It's not working yet, added to the Roadmap.
-	// TODO(unimportant): Add cursor blinking
+	//nolint:godox
+	//TODO(unimportant): Add cursor blinking
 	EnableInputBlinking bool
 }
 
-// App - the structure of the application
+// App - the structure of the application.
 type App struct {
 	// The name of your application
 	Name string
@@ -39,18 +40,21 @@ func (a *App) getFlagSchema() flagSchema {
 
 func parseFlagSchema(commands Commands) flagSchema {
 	schema := flagSchema{}
-	for _, command := range commands {
-		newSchema := parseFlagSchemaSingle(command)
+
+	for _, cmd := range commands {
+		newSchema := parseFlagSchemaSingle(cmd)
 		for k, v := range newSchema {
 			schema[k] = v
 		}
 	}
+
 	return schema
 }
 
 func parseFlagSchemaSingle(command *Command) flagSchema {
 	allFlags := make(map[string]map[string]FlagType)
 	f := make(map[string]FlagType)
+
 	for _, flag := range command.Flags {
 		switch flag.ValueType() {
 		case "bool":
@@ -65,13 +69,16 @@ func parseFlagSchemaSingle(command *Command) flagSchema {
 			f[flag.GetName()] = FlagTypeIntArray
 		}
 	}
+
 	if len(command.Subcommands) > 0 {
 		schema := parseFlagSchema(command.Subcommands)
 		for k, v := range schema {
 			allFlags[k] = v
 		}
 	}
+
 	allFlags[command.Name] = f
+
 	return allFlags
 }
 
@@ -90,9 +97,11 @@ func setHelpFlag(commands []*Command) []*Command {
 				Usage: L(i18n_app_help_usage),
 			})
 		}
+
 		if commands[i].Subcommands != nil && len(commands[i].Subcommands) > 0 {
 			commands[i].Subcommands = setHelpFlag(commands[i].Subcommands)
 		}
 	}
+
 	return commands
 }

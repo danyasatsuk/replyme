@@ -61,6 +61,7 @@ func buildHelpFlags(command *Command) []helpFlagsStruct {
 	if command.Flags == nil {
 		return nil
 	}
+
 	flags := make([]helpFlagsStruct, len(command.Flags))
 	for i, flag := range command.Flags {
 		flags[i] = helpFlagsStruct{
@@ -68,6 +69,7 @@ func buildHelpFlags(command *Command) []helpFlagsStruct {
 			Usage: flag.GetUsage(),
 			Alias: flag.GetAlias(),
 		}
+
 		switch flag.ValueType() {
 		case "string":
 			flags[i].Type = "=" + L(i18n_help_flag_type_string)
@@ -81,6 +83,7 @@ func buildHelpFlags(command *Command) []helpFlagsStruct {
 			flags[i].Type = "=" + L(i18n_help_flag_type_int_array)
 		}
 	}
+
 	return flags
 }
 
@@ -88,6 +91,7 @@ func buildHelpArguments(command *Command) []helpArgumentsStruct {
 	if command.Arguments == nil {
 		return nil
 	}
+
 	args := make([]helpArgumentsStruct, len(command.Arguments))
 	for i, arg := range command.Arguments {
 		args[i] = helpArgumentsStruct{
@@ -95,6 +99,7 @@ func buildHelpArguments(command *Command) []helpArgumentsStruct {
 			Usage: arg.Usage,
 		}
 	}
+
 	return args
 }
 
@@ -102,6 +107,7 @@ func buildHelpSubcommands(command *Command) []helpSubcommandsStruct {
 	if command.Subcommands == nil {
 		return nil
 	}
+
 	subcommands := make([]helpSubcommandsStruct, len(command.Subcommands))
 	for i, subcommand := range command.Subcommands {
 		subcommands[i] = helpSubcommandsStruct{
@@ -109,6 +115,7 @@ func buildHelpSubcommands(command *Command) []helpSubcommandsStruct {
 			Usage: subcommand.Usage,
 		}
 	}
+
 	return subcommands
 }
 
@@ -116,6 +123,7 @@ func buildHelpCommands(app *App) []helpSubcommandsStruct {
 	if app.Commands == nil {
 
 	}
+
 	commands := make([]helpSubcommandsStruct, len(app.Commands))
 	for i, subcommand := range app.Commands {
 		commands[i] = helpSubcommandsStruct{
@@ -123,6 +131,7 @@ func buildHelpCommands(app *App) []helpSubcommandsStruct {
 			Usage: subcommand.Usage,
 		}
 	}
+
 	return commands
 }
 
@@ -155,6 +164,7 @@ func createTemplate() {
 
 func helpCommand(command *Command) (string, error) {
 	createTemplate()
+
 	t := helpStruct{
 		Name:        command.Name,
 		Usage:       command.Usage,
@@ -165,19 +175,23 @@ func helpCommand(command *Command) (string, error) {
 	}
 
 	buf := &bytes.Buffer{}
+
 	parse, err := tmpl.Parse(HelpCommandTemplate)
 	if err != nil {
 		return "", err
 	}
+
 	err = parse.Execute(buf, t)
 	if err != nil {
 		return "", err
 	}
+
 	return buf.String(), nil
 }
 
 func helpApp(app *App) (string, error) {
 	createTemplate()
+
 	t := helpStruct{
 		Name:        app.Name,
 		Usage:       app.Usage,
@@ -188,13 +202,16 @@ func helpApp(app *App) (string, error) {
 	}
 
 	buf := &bytes.Buffer{}
+
 	parse, err := tmpl.Parse(HelpCommandTemplate)
 	if err != nil {
 		return "", err
 	}
+
 	err = parse.Execute(buf, t)
 	if err != nil {
 		return "", err
 	}
+
 	return buf.String(), nil
 }

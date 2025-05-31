@@ -9,5 +9,6 @@ func (m *model) Init() tea.Cmd {
 	if m.app.Params.EnableInputBlinking {
 		return tea.Batch(m.spinner.Tick, ticker(), textinput.Blink)
 	}
+
 	return tea.Batch(m.spinner.Tick, ticker())
 }

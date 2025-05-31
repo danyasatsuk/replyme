@@ -20,6 +20,7 @@ func (m *inputText) SetParams(p TUIInputTextParams) {
 		m.input.EchoMode = textinput.EchoPassword
 		m.input.EchoCharacter = '*'
 	}
+
 	m.input.Placeholder = m.params.Placeholder
 }
 
@@ -41,21 +42,26 @@ func (m *inputText) Update(msg tea.Msg) (*inputText, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
+
 			return m, nil
 		case "enter":
 			if m.params.MaxLength > 0 && len(m.input.Value()) > m.params.MaxLength {
 				return m, nil
 			}
+
 			if m.params.Validate == nil || m.params.Validate(m.input.Value()) {
 				m.IsValidated = true
 				m.Value = m.input.Value()
 				m.input.Reset()
+
 				return m, nil
 			}
 		}
 	}
+
 	var cmd tea.Cmd
 	m.input, cmd = m.input.Update(msg)
+
 	return m, cmd
 }
 
@@ -71,5 +77,6 @@ func inputTextNew() *inputText {
 	m := &inputText{
 		input: textinput.New(),
 	}
+
 	return m
 }
