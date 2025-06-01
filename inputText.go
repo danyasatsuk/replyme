@@ -54,6 +54,7 @@ func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		var cmd tea.Cmd
+
 		m.width = msg.Width
 		m.height = msg.Height
 		m.input, cmd = m.input.Update(msg)
@@ -101,11 +102,11 @@ func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m inputText) View() string {
-	return inputTextContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
+	return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
 
 %s
 
-%s`, styles.InputTextTitle(m.params.Name), m.input.View(), styles.InputTextDescription(m.params.Description)))
+%s`, styles.InputTitle(m.params.Name), m.input.View(), styles.InputDescription(m.params.Description)))
 }
 
 func inputTextNew(c chan bool, isCLI ...bool) inputText {
