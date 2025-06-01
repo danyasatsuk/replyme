@@ -15,6 +15,8 @@ type selectOne struct {
 	isCLI       bool
 	c           chan TUIResponse
 	close       chan bool
+	width       int
+	height      int
 }
 
 func (m selectOne) SetParams(p TUISelectOneParams, c chan TUIResponse) selectOne {
@@ -30,6 +32,8 @@ func (m selectOne) SetParams(p TUISelectOneParams, c chan TUIResponse) selectOne
 	m.IsValidated = false
 	m.IsExit = false
 	m.c = c
+	m.listModel.SetWidth(m.width - 2)
+	m.listModel.SetHeight(m.height - 2)
 
 	return m
 }
@@ -72,8 +76,8 @@ func (m selectOne) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 	case tea.WindowSizeMsg:
-		m.listModel.SetWidth(msg.Width)
-		m.listModel.SetHeight(msg.Height)
+		m.listModel.SetWidth(msg.Width - 2)
+		m.listModel.SetHeight(msg.Height - 2)
 	}
 
 	var cmd tea.Cmd
@@ -83,7 +87,7 @@ func (m selectOne) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m selectOne) View() string {
-	return m.listModel.View()
+	return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(m.listModel.View())
 }
 
 func selectOneNew(c chan bool, isCLI ...bool) selectOne {
@@ -92,8 +96,12 @@ func selectOneNew(c chan bool, isCLI ...bool) selectOne {
 		cli = true
 	}
 
+	l := list.New([]list.Item{}, list.NewDefaultDelegate(), standardWidth, standardHeight)
+	l.SetStatusBarItemName(L(i18n_tui_selectone_item), L(i18n_tui_selectone_items))
+	l.SetShowHelp(false)
+
 	m := selectOne{
-		listModel: list.New([]list.Item{}, list.NewDefaultDelegate(), standardWidth, standardHeight),
+		listModel: l,
 		isCLI:     cli,
 		close:     c,
 	}

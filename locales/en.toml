@@ -101,3 +101,11 @@ translation = "[array of numbers]"
 [[message]]
 id = "app_help_usage"
 translation = "Displays this information"
+
+[[message]]
+id = "tui_selectone_item"
+translation = "item"
+
+[[message]]
+id = "tui_selectone_items"
+translation = "items"

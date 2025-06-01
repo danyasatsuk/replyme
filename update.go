@@ -199,6 +199,8 @@ func (m *model) onTUIChan(t TUIRequest, msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch t.Type {
 	case tuiTypeSelectOne:
+		m.selectOne.width = m.windowWidth
+		m.selectOne.height = m.windowHeight
 		m.selectOne = m.selectOne.SetParams(t.Payload.(TUISelectOneParams), t.Response)
 	case tuiTypeInputText:
 		m.inputText.width = m.windowWidth

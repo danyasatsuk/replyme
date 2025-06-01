@@ -101,3 +101,11 @@ translation = "[массив чисел]"
 [[message]]
 id = "app_help_usage"
 translation = "Отображает эту информацию"
+
+[[message]]
+id = "tui_selectone_item"
+translation = "элемент"
+
+[[message]]
+id = "tui_selectone_items"
+translation = "элемент(а/ов)"

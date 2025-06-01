@@ -30,4 +30,6 @@ const (
 	i18n_help_flag_type_string_array string = "help_flag_type_string_array"
 	i18n_help_flag_type_int_array    string = "help_flag_type_int_array"
 	i18n_app_help_usage              string = "app_help_usage"
+	i18n_tui_selectone_item          string = "tui_selectone_item"
+	i18n_tui_selectone_items         string = "tui_selectone_items"
 )
