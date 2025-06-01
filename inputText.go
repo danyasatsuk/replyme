@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type inputText struct {
@@ -12,6 +13,8 @@ type inputText struct {
 	IsExit      bool
 	Value       string
 	params      TUIInputTextParams
+	width       int
+	height      int
 	isCLI       bool
 	close       chan bool
 	c           chan TUIResponse
@@ -49,6 +52,13 @@ func (m inputText) Init() tea.Cmd {
 
 func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		var cmd tea.Cmd
+		m.width = msg.Width
+		m.height = msg.Height
+		m.input, cmd = m.input.Update(msg)
+
+		return m, cmd
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
@@ -91,11 +101,11 @@ func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m inputText) View() string {
-	return fmt.Sprintf(`%s
+	return inputTextContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
 
 %s
 
-%s`, m.params.Name, m.params.Description, m.input.View())
+%s`, styles.InputTextTitle(m.params.Name), m.input.View(), styles.InputTextDescription(m.params.Description)))
 }
 
 func inputTextNew(c chan bool, isCLI ...bool) inputText {
@@ -106,6 +116,7 @@ func inputTextNew(c chan bool, isCLI ...bool) inputText {
 
 	t := textinput.New()
 	t.Width = standardWidth
+	t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
 
 	m := inputText{
 		input: t,
