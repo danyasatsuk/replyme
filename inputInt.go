@@ -2,6 +2,7 @@ package replyme
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -17,6 +18,8 @@ type inputInt struct {
 	isCLI       bool
 	c           chan TUIResponse
 	close       chan bool
+	width       int
+	height      int
 }
 
 func inputIntNew(c chan bool, isCLI ...bool) inputInt {
@@ -25,8 +28,12 @@ func inputIntNew(c chan bool, isCLI ...bool) inputInt {
 		cli = true
 	}
 
+	t := textinput.New()
+	t.Width = standardWidth
+	t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+
 	return inputInt{
-		input: textinput.New(),
+		input: t,
 		isCLI: cli,
 		close: c,
 	}
@@ -55,6 +62,14 @@ func (m inputInt) Blur() {
 
 func (m inputInt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		var cmd tea.Cmd
+
+		m.width = msg.Width
+		m.height = msg.Height
+		m.input, cmd = m.input.Update(msg)
+
+		return m, cmd
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
@@ -78,11 +93,14 @@ func (m inputInt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m inputInt) View() string {
-	return fmt.Sprintf(`%s
+	return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
 
 %s
+%s
 
-%s`, m.params.Name, m.params.Description, m.input.View())
+%s`, styles.InputTitle(m.params.Name), m.input.View(),
+		styles.GrayStyle(fmt.Sprintf("<=%d | >=%d", m.params.MinValue, m.params.MaxValue)),
+		styles.InputDescription(m.params.Description)))
 }
 
 func (m inputInt) onEnter() (inputInt, tea.Cmd) {

@@ -205,6 +205,8 @@ func (m *model) onTUIChan(t TUIRequest, msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.inputText.height = m.windowHeight
 		m.inputText = m.inputText.SetParams(t.Payload.(TUIInputTextParams), t.Response)
 	case tuiTypeInputInt:
+		m.inputInt.width = m.windowWidth
+		m.inputInt.height = m.windowHeight
 		m.inputInt = m.inputInt.SetParams(t.Payload.(TUIInputIntParams), t.Response)
 	case tuiTypeInputFile:
 		m.inputFile = m.inputFile.SetParams(t.Payload.(TUIInputFileParams), t.Response)
