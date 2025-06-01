@@ -15,25 +15,32 @@ type confirm struct {
 	cursor int // 0 = Yes, 1 = No
 	c      chan TUIResponse
 	close  chan bool
+	isCLI  bool
 }
 
-func confirmNew(c chan bool) *confirm {
-	return &confirm{
+func confirmNew(c chan bool, isCLI ...bool) confirm {
+	var cli bool
+	if len(isCLI) > 0 && isCLI[0] {
+		cli = true
+	}
+
+	return confirm{
 		close: c,
+		isCLI: cli,
 	}
 }
 
-func (m *confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) {
+func (m confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) {
 	m.params = p
 	m.cursor = 0
 	m.c = c
 }
 
-func (m *confirm) Init() tea.Cmd {
+func (m confirm) Init() tea.Cmd {
 	return nil
 }
 
-func (m *confirm) Update(msg tea.Msg) (*confirm, tea.Cmd) {
+func (m confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -70,6 +77,10 @@ func (m *confirm) Update(msg tea.Msg) (*confirm, tea.Cmd) {
 			m.c <- TUIResponse{m.Value, nil}
 			m.close <- true
 
+			if m.isCLI {
+				return m, tea.Quit
+			}
+
 			return m, nil
 		}
 	}
@@ -77,7 +88,7 @@ func (m *confirm) Update(msg tea.Msg) (*confirm, tea.Cmd) {
 	return m, nil
 }
 
-func (m *confirm) View() string {
+func (m confirm) View() string {
 	var yes, no string
 
 	if m.cursor == 0 {

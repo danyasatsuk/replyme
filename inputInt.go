@@ -14,38 +14,49 @@ type inputInt struct {
 	IsExit      bool
 	Value       int
 	params      TUIInputIntParams
+	isCLI       bool
 }
 
-func inputIntNew() *inputInt {
-	return &inputInt{
+func inputIntNew(isCLI ...bool) inputInt {
+	var cli bool
+	if len(isCLI) > 0 && isCLI[0] {
+		cli = true
+	}
+
+	return inputInt{
 		input: textinput.New(),
+		isCLI: cli,
 	}
 }
 
-func (m *inputInt) SetParams(p TUIInputIntParams) {
+func (m inputInt) SetParams(p TUIInputIntParams) {
 	m.params = p
 	m.input.Placeholder = L(i18n_inputint_placeholder)
 	m.input.Focus()
 }
 
-func (m *inputInt) Init() tea.Cmd {
+func (m inputInt) Init() tea.Cmd {
 	return nil
 }
 
-func (m *inputInt) Focus() {
+func (m inputInt) Focus() {
 	m.input.Focus()
 }
 
-func (m *inputInt) Blur() {
+func (m inputInt) Blur() {
 	m.input.Blur()
 }
 
-func (m *inputInt) Update(msg tea.Msg) (*inputInt, tea.Cmd) {
+func (m inputInt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
+
+			if m.isCLI {
+				return m, tea.Quit
+			}
 
 			return m, nil
 
@@ -60,7 +71,7 @@ func (m *inputInt) Update(msg tea.Msg) (*inputInt, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *inputInt) View() string {
+func (m inputInt) View() string {
 	return fmt.Sprintf(`%s
 
 %s
@@ -68,7 +79,7 @@ func (m *inputInt) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View())
 }
 
-func (m *inputInt) onEnter() (*inputInt, tea.Cmd) {
+func (m inputInt) onEnter() (inputInt, tea.Cmd) {
 	strVal := m.input.Value()
 
 	intVal, err := strconv.Atoi(strVal)
@@ -91,6 +102,10 @@ func (m *inputInt) onEnter() (*inputInt, tea.Cmd) {
 	m.IsValidated = true
 	m.Value = intVal
 	m.input.Reset()
+
+	if m.isCLI {
+		return m, tea.Quit
+	}
 
 	return m, nil
 }

@@ -49,11 +49,11 @@ type modelTUI struct {
 	runningTUI   *TUIRequest
 	tuiViewport  viewport.Model
 
-	selectOne *selectOne
-	inputText *inputText
-	inputInt  *inputInt
-	inputFile *inputFile
-	confirm   *confirm
+	selectOne selectOne
+	inputText inputText
+	inputInt  inputInt
+	inputFile inputFile
+	confirm   confirm
 }
 
 func createViewport() viewport.Model {

@@ -16,18 +16,28 @@ func (m *model) tuiUpdater(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch m.runningTUI.Type {
 	case tuiTypeSelectOne:
-		m.selectOne, cmd = m.selectOne.Update(msg)
+		var mod tea.Model
+		mod, cmd = m.selectOne.Update(msg)
+		m.selectOne = mod.(selectOne)
 	case tuiTypeSelectSeveral:
 		//nolint:godox
 		// TODO(medium): Implement SelectSeveral and add
 	case tuiTypeInputText:
-		m.inputText, cmd = m.inputText.Update(msg)
+		var mod tea.Model
+		mod, cmd = m.inputText.Update(msg)
+		m.selectOne = mod.(selectOne)
 	case tuiTypeInputInt:
-		m.inputInt, cmd = m.inputInt.Update(msg)
+		var mod tea.Model
+		mod, cmd = m.inputInt.Update(msg)
+		m.selectOne = mod.(selectOne)
 	case tuiTypeInputFile:
-		m.inputFile, cmd = m.inputFile.Update(msg)
+		var mod tea.Model
+		mod, cmd = m.inputFile.Update(msg)
+		m.selectOne = mod.(selectOne)
 	case tuiTypeConfirm:
-		m.confirm, cmd = m.confirm.Update(msg)
+		var mod tea.Model
+		mod, cmd = m.confirm.Update(msg)
+		m.selectOne = mod.(selectOne)
 	}
 
 	return m, tea.Batch(cmd, ticker())

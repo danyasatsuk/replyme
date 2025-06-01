@@ -9,11 +9,13 @@ type selectOne struct {
 	listModel   list.Model
 	IsValidated bool
 	params      TUISelectOneParams
-	Value       tuiSelectItem
+	Value       TUISelectItem
 	IsExit      bool
+	onExit      func(id string)
+	isCLI       bool
 }
 
-func (m *selectOne) SetParams(p TUISelectOneParams) {
+func (m selectOne) SetParams(p TUISelectOneParams) selectOne {
 	m.params = p
 
 	items := make([]list.Item, len(p.Items))
@@ -25,25 +27,35 @@ func (m *selectOne) SetParams(p TUISelectOneParams) {
 	m.listModel.Title = p.Name
 	m.IsValidated = false
 	m.IsExit = false
+
+	return m
 }
 
-func (m *selectOne) Init() tea.Cmd {
+func (m selectOne) Init() tea.Cmd {
 	return nil
 }
 
-func (m *selectOne) Update(msg tea.Msg) (*selectOne, tea.Cmd) {
+func (m selectOne) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q", "esc":
 			m.IsExit = true
 
+			if m.isCLI {
+				return m, tea.Quit
+			}
+
 			return m, nil
 		case "enter":
 			selected := m.listModel.SelectedItem()
-			if item, ok := selected.(tuiSelectItem); ok {
+			if item, ok := selected.(TUISelectItem); ok {
 				m.Value = item
 				m.IsValidated = true
+
+				if m.isCLI {
+					return m, tea.Quit
+				}
 			}
 
 			return m, nil
@@ -59,13 +71,19 @@ func (m *selectOne) Update(msg tea.Msg) (*selectOne, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *selectOne) View() string {
+func (m selectOne) View() string {
 	return m.listModel.View()
 }
 
-func selectOneNew() *selectOne {
-	m := &selectOne{
+func selectOneNew(isCLI ...bool) selectOne {
+	var cli bool
+	if len(isCLI) > 0 && isCLI[0] {
+		cli = true
+	}
+
+	m := selectOne{
 		listModel: list.New([]list.Item{}, list.NewDefaultDelegate(), standardWidth, standardHeight),
+		isCLI:     cli,
 	}
 
 	return m

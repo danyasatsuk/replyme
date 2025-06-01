@@ -12,9 +12,10 @@ type inputText struct {
 	IsExit      bool
 	Value       string
 	params      TUIInputTextParams
+	isCLI       bool
 }
 
-func (m *inputText) SetParams(p TUIInputTextParams) {
+func (m inputText) SetParams(p TUIInputTextParams) inputText {
 	m.params = p
 	if m.params.IsPassword {
 		m.input.EchoMode = textinput.EchoPassword
@@ -22,26 +23,34 @@ func (m *inputText) SetParams(p TUIInputTextParams) {
 	}
 
 	m.input.Placeholder = m.params.Placeholder
+
+	return m
 }
 
-func (m *inputText) Focus() {
+func (m inputText) Focus() inputText {
 	m.input.Focus()
+
+	return m
 }
 
-func (m *inputText) Blur() {
+func (m inputText) Blur() {
 	m.input.Blur()
 }
 
-func (m *inputText) Init() tea.Cmd {
+func (m inputText) Init() tea.Cmd {
 	return nil
 }
 
-func (m *inputText) Update(msg tea.Msg) (*inputText, tea.Cmd) {
+func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
+
+			if m.isCLI {
+				return m, tea.Quit
+			}
 
 			return m, nil
 		case "enter":
@@ -54,6 +63,10 @@ func (m *inputText) Update(msg tea.Msg) (*inputText, tea.Cmd) {
 				m.Value = m.input.Value()
 				m.input.Reset()
 
+				if m.isCLI {
+					return m, tea.Quit
+				}
+
 				return m, nil
 			}
 		}
@@ -65,7 +78,7 @@ func (m *inputText) Update(msg tea.Msg) (*inputText, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *inputText) View() string {
+func (m inputText) View() string {
 	return fmt.Sprintf(`%s
 
 %s
@@ -73,9 +86,18 @@ func (m *inputText) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View())
 }
 
-func inputTextNew() *inputText {
-	m := &inputText{
-		input: textinput.New(),
+func inputTextNew(isCLI ...bool) inputText {
+	var cli bool
+	if len(isCLI) > 0 && isCLI[0] {
+		cli = true
+	}
+
+	t := textinput.New()
+	t.Width = standardWidth
+
+	m := inputText{
+		input: t,
+		isCLI: cli,
 	}
 
 	return m

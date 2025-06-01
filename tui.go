@@ -15,28 +15,28 @@ const (
 	tuiTypeConfirm
 )
 
-type tuiSelectItem struct {
+type TUISelectItem struct {
 	ID   string
 	Name string
 	Desc string
 }
 
-func (i tuiSelectItem) Title() string {
+func (i TUISelectItem) Title() string {
 	return i.Name
 }
 
-func (i tuiSelectItem) Description() string {
+func (i TUISelectItem) Description() string {
 	return i.Desc
 }
 
-func (i tuiSelectItem) FilterValue() string {
+func (i TUISelectItem) FilterValue() string {
 	return i.Name
 }
 
 type TUISelectOneParams struct {
 	Name        string
 	Description string
-	Items       []tuiSelectItem
+	Items       []TUISelectItem
 }
 
 type TUIInputTextParams struct {
@@ -71,7 +71,7 @@ type TUIConfirmParams struct {
 
 type TUISelectOneResult struct {
 	SelectedID   string
-	SelectedItem tuiSelectItem
+	SelectedItem TUISelectItem
 }
 
 type TUIInputFileResult struct {

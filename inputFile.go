@@ -26,35 +26,42 @@ type inputFile struct {
 	params      TUIInputFileParams
 	statusLine  string
 	statusStyle lipgloss.Style
+	isCLI       bool
 }
 
-func inputFileNew() *inputFile {
-	m := &inputFile{
+func inputFileNew(isCLI ...bool) inputFile {
+	var cli bool
+	if len(isCLI) > 0 && isCLI[0] {
+		cli = true
+	}
+
+	m := inputFile{
 		input: textinput.New(),
+		isCLI: cli,
 	}
 
 	return m
 }
 
-func (m *inputFile) SetParams(p TUIInputFileParams) {
+func (m inputFile) SetParams(p TUIInputFileParams) {
 	m.params = p
 	m.input.Placeholder = L(i18n_inputfile_placeholder)
 	m.input.Focus()
 }
 
-func (m *inputFile) Init() tea.Cmd {
+func (m inputFile) Init() tea.Cmd {
 	return nil
 }
 
-func (m *inputFile) Focus() {
+func (m inputFile) Focus() {
 	m.input.Focus()
 }
 
-func (m *inputFile) Blur() {
+func (m inputFile) Blur() {
 	m.input.Blur()
 }
 
-func (m *inputFile) Update(msg tea.Msg) (*inputFile, tea.Cmd) {
+func (m inputFile) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.Type == tea.KeyInsert && len(msg.String()) > 1 {
@@ -68,6 +75,10 @@ func (m *inputFile) Update(msg tea.Msg) (*inputFile, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
+
+			if m.isCLI {
+				return m, tea.Quit
+			}
 
 			return m, nil
 
@@ -84,7 +95,7 @@ func (m *inputFile) Update(msg tea.Msg) (*inputFile, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *inputFile) View() string {
+func (m inputFile) View() string {
 	return fmt.Sprintf(`%s
 
 %s
@@ -94,7 +105,7 @@ func (m *inputFile) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View(), m.statusStyle.Render(m.statusLine))
 }
 
-func (m *inputFile) checkPath() (os.FileInfo, string, error) {
+func (m inputFile) checkPath() (os.FileInfo, string, error) {
 	path := m.input.Value()
 
 	abs, err := filepath.Abs(path)
@@ -114,7 +125,7 @@ func (m *inputFile) checkPath() (os.FileInfo, string, error) {
 	return stat, abs, nil
 }
 
-func (m *inputFile) onEnter() (*inputFile, tea.Cmd) {
+func (m *inputFile) onEnter() (tea.Model, tea.Cmd) {
 	stat, abs, err := m.checkPath()
 	if err != nil {
 		return m, nil
@@ -169,15 +180,19 @@ func (m *inputFile) onEnter() (*inputFile, tea.Cmd) {
 	m.input.Reset()
 	m.setStatus(L(i18n_inputfile_success), okStyle)
 
+	if m.isCLI {
+		return m, tea.Quit
+	}
+
 	return m, nil
 }
 
-func (m *inputFile) setStatus(text string, style lipgloss.Style) {
+func (m inputFile) setStatus(text string, style lipgloss.Style) {
 	m.statusLine = text
 	m.statusStyle = style
 }
 
-func (m *inputFile) updateStatus() {
+func (m inputFile) updateStatus() {
 	path := m.input.Value()
 
 	absPath, err := filepath.Abs(path)
