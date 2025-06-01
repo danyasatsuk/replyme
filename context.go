@@ -352,7 +352,7 @@ func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	c.emitTUI(req)
+	go c.emitTUI(req)
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -371,7 +371,7 @@ func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	c.emitTUI(req)
+	go c.emitTUI(req)
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -390,7 +390,7 @@ func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	c.emitTUI(req)
+	go c.emitTUI(req)
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -409,7 +409,7 @@ func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	c.emitTUI(req)
+	go c.emitTUI(req)
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -428,7 +428,7 @@ func (c *Context) Confirm(p *TUIConfirmParams) (bool, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	c.emitTUI(req)
+	go c.emitTUI(req)
 
 	res := <-req.Response
 	if res.Err != nil {
