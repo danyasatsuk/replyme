@@ -13,9 +13,11 @@ type inputText struct {
 	Value       string
 	params      TUIInputTextParams
 	isCLI       bool
+	close       chan bool
+	c           chan TUIResponse
 }
 
-func (m inputText) SetParams(p TUIInputTextParams) inputText {
+func (m inputText) SetParams(p TUIInputTextParams, c chan TUIResponse) inputText {
 	m.params = p
 	if m.params.IsPassword {
 		m.input.EchoMode = textinput.EchoPassword
@@ -23,6 +25,10 @@ func (m inputText) SetParams(p TUIInputTextParams) inputText {
 	}
 
 	m.input.Placeholder = m.params.Placeholder
+
+	m.c = c
+
+	m = m.Focus()
 
 	return m
 }
@@ -63,6 +69,12 @@ func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Value = m.input.Value()
 				m.input.Reset()
 
+				m.c <- TUIResponse{
+					Value: m.Value,
+					Err:   nil,
+				}
+				m.close <- true
+
 				if m.isCLI {
 					return m, tea.Quit
 				}
@@ -86,7 +98,7 @@ func (m inputText) View() string {
 %s`, m.params.Name, m.params.Description, m.input.View())
 }
 
-func inputTextNew(isCLI ...bool) inputText {
+func inputTextNew(c chan bool, isCLI ...bool) inputText {
 	var cli bool
 	if len(isCLI) > 0 && isCLI[0] {
 		cli = true
@@ -98,6 +110,7 @@ func inputTextNew(isCLI ...bool) inputText {
 	m := inputText{
 		input: t,
 		isCLI: cli,
+		close: c,
 	}
 
 	return m

@@ -30,10 +30,12 @@ func confirmNew(c chan bool, isCLI ...bool) confirm {
 	}
 }
 
-func (m confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) {
+func (m confirm) SetParams(p TUIConfirmParams, c chan TUIResponse) confirm {
 	m.params = p
 	m.cursor = 0
 	m.c = c
+
+	return m
 }
 
 func (m confirm) Init() tea.Cmd {

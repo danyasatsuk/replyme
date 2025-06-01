@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const standardWidth = 56
@@ -87,10 +86,10 @@ func createModel(app *App) *model {
 		modelTUI: modelTUI{
 			tuiViewport: createTUIViewport(),
 			tuiChan:     make(chan TUIRequest),
-			selectOne:   selectOneNew(),
-			inputText:   inputTextNew(),
-			inputInt:    inputIntNew(),
-			inputFile:   inputFileNew(),
+			selectOne:   selectOneNew(tuiClose),
+			inputText:   inputTextNew(tuiClose),
+			inputInt:    inputIntNew(tuiClose),
+			inputFile:   inputFileNew(tuiClose),
 			confirm:     confirmNew(tuiClose),
 			tuiClose:    tuiClose,
 		},
@@ -108,7 +107,6 @@ func createModel(app *App) *model {
 			stderr:              bytes.NewBuffer(nil),
 		},
 	}
-	m.tuiViewport.Style = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("32"))
 
 	return m
 }

@@ -25,19 +25,19 @@ func (m *model) tuiUpdater(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tuiTypeInputText:
 		var mod tea.Model
 		mod, cmd = m.inputText.Update(msg)
-		m.selectOne = mod.(selectOne)
+		m.inputText = mod.(inputText)
 	case tuiTypeInputInt:
 		var mod tea.Model
 		mod, cmd = m.inputInt.Update(msg)
-		m.selectOne = mod.(selectOne)
+		m.inputInt = mod.(inputInt)
 	case tuiTypeInputFile:
 		var mod tea.Model
 		mod, cmd = m.inputFile.Update(msg)
-		m.selectOne = mod.(selectOne)
+		m.inputFile = mod.(inputFile)
 	case tuiTypeConfirm:
 		var mod tea.Model
 		mod, cmd = m.confirm.Update(msg)
-		m.selectOne = mod.(selectOne)
+		m.confirm = mod.(confirm)
 	}
 
 	return m, tea.Batch(cmd, ticker())
@@ -63,7 +63,17 @@ func (m *model) handleWindowSizeMsg(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) 
 	m.logsViewport.GotoBottom()
 	cmd := m.updateViewport(msg)
 
-	return m, cmd
+	var cmd2 tea.Cmd
+
+	var cmd3 tea.Cmd
+
+	if m.isRunningTUI {
+		m.tuiViewport, cmd2 = m.tuiViewport.Update(msg)
+		m.tuiUpdater(msg)
+		_, cmd3 = m.tuiUpdater(msg)
+	}
+
+	return m, tea.Batch(cmd, cmd2, cmd3)
 }
 
 func (m *model) helpFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -92,6 +102,10 @@ func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+c":
 		return m, tea.Quit
 	case "enter":
+		if m.isRunningTUI {
+			return m.tuiUpdater(msg)
+		}
+
 		command := m.input.Value()
 		if command == "" {
 			return m, nil
@@ -185,15 +199,15 @@ func (m *model) onTUIChan(t TUIRequest, msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch t.Type {
 	case tuiTypeSelectOne:
-		m.selectOne.SetParams(t.Payload.(TUISelectOneParams))
+		m.selectOne = m.selectOne.SetParams(t.Payload.(TUISelectOneParams), t.Response)
 	case tuiTypeInputText:
-		m.inputText.SetParams(t.Payload.(TUIInputTextParams))
+		m.inputText = m.inputText.SetParams(t.Payload.(TUIInputTextParams), t.Response)
 	case tuiTypeInputInt:
-		m.inputInt.SetParams(t.Payload.(TUIInputIntParams))
+		m.inputInt = m.inputInt.SetParams(t.Payload.(TUIInputIntParams), t.Response)
 	case tuiTypeInputFile:
-		m.inputFile.SetParams(t.Payload.(TUIInputFileParams))
+		m.inputFile = m.inputFile.SetParams(t.Payload.(TUIInputFileParams), t.Response)
 	case tuiTypeConfirm:
-		m.confirm.SetParams(t.Payload.(TUIConfirmParams), t.Response)
+		m.confirm = m.confirm.SetParams(t.Payload.(TUIConfirmParams), t.Response)
 	}
 
 	return m, nil

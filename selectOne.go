@@ -13,9 +13,11 @@ type selectOne struct {
 	IsExit      bool
 	onExit      func(id string)
 	isCLI       bool
+	c           chan TUIResponse
+	close       chan bool
 }
 
-func (m selectOne) SetParams(p TUISelectOneParams) selectOne {
+func (m selectOne) SetParams(p TUISelectOneParams, c chan TUIResponse) selectOne {
 	m.params = p
 
 	items := make([]list.Item, len(p.Items))
@@ -27,6 +29,7 @@ func (m selectOne) SetParams(p TUISelectOneParams) selectOne {
 	m.listModel.Title = p.Name
 	m.IsValidated = false
 	m.IsExit = false
+	m.c = c
 
 	return m
 }
@@ -52,10 +55,18 @@ func (m selectOne) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if item, ok := selected.(TUISelectItem); ok {
 				m.Value = item
 				m.IsValidated = true
+				m.c <- TUIResponse{
+					Value: TUISelectOneResult{
+						SelectedID:   m.Value.ID,
+						SelectedItem: m.Value,
+					},
+				}
 
 				if m.isCLI {
 					return m, tea.Quit
 				}
+
+				m.close <- true
 			}
 
 			return m, nil
@@ -75,7 +86,7 @@ func (m selectOne) View() string {
 	return m.listModel.View()
 }
 
-func selectOneNew(isCLI ...bool) selectOne {
+func selectOneNew(c chan bool, isCLI ...bool) selectOne {
 	var cli bool
 	if len(isCLI) > 0 && isCLI[0] {
 		cli = true
@@ -84,6 +95,7 @@ func selectOneNew(isCLI ...bool) selectOne {
 	m := selectOne{
 		listModel: list.New([]list.Item{}, list.NewDefaultDelegate(), standardWidth, standardHeight),
 		isCLI:     cli,
+		close:     c,
 	}
 
 	return m

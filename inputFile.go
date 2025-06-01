@@ -27,9 +27,11 @@ type inputFile struct {
 	statusLine  string
 	statusStyle lipgloss.Style
 	isCLI       bool
+	c           chan TUIResponse
+	close       chan bool
 }
 
-func inputFileNew(isCLI ...bool) inputFile {
+func inputFileNew(c chan bool, isCLI ...bool) inputFile {
 	var cli bool
 	if len(isCLI) > 0 && isCLI[0] {
 		cli = true
@@ -38,15 +40,19 @@ func inputFileNew(isCLI ...bool) inputFile {
 	m := inputFile{
 		input: textinput.New(),
 		isCLI: cli,
+		close: c,
 	}
 
 	return m
 }
 
-func (m inputFile) SetParams(p TUIInputFileParams) {
+func (m inputFile) SetParams(p TUIInputFileParams, c chan TUIResponse) inputFile {
 	m.params = p
 	m.input.Placeholder = L(i18n_inputfile_placeholder)
 	m.input.Focus()
+	m.c = c
+
+	return m
 }
 
 func (m inputFile) Init() tea.Cmd {
@@ -180,9 +186,16 @@ func (m *inputFile) onEnter() (tea.Model, tea.Cmd) {
 	m.input.Reset()
 	m.setStatus(L(i18n_inputfile_success), okStyle)
 
+	m.c <- TUIResponse{
+		Value: m.Value,
+		Err:   nil,
+	}
+
 	if m.isCLI {
 		return m, tea.Quit
 	}
+
+	m.close <- true
 
 	return m, nil
 }

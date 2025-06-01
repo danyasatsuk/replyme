@@ -15,9 +15,11 @@ type inputInt struct {
 	Value       int
 	params      TUIInputIntParams
 	isCLI       bool
+	c           chan TUIResponse
+	close       chan bool
 }
 
-func inputIntNew(isCLI ...bool) inputInt {
+func inputIntNew(c chan bool, isCLI ...bool) inputInt {
 	var cli bool
 	if len(isCLI) > 0 && isCLI[0] {
 		cli = true
@@ -26,13 +28,17 @@ func inputIntNew(isCLI ...bool) inputInt {
 	return inputInt{
 		input: textinput.New(),
 		isCLI: cli,
+		close: c,
 	}
 }
 
-func (m inputInt) SetParams(p TUIInputIntParams) {
+func (m inputInt) SetParams(p TUIInputIntParams, c chan TUIResponse) inputInt {
 	m.params = p
 	m.input.Placeholder = L(i18n_inputint_placeholder)
 	m.input.Focus()
+	m.c = c
+
+	return m
 }
 
 func (m inputInt) Init() tea.Cmd {
@@ -103,9 +109,16 @@ func (m inputInt) onEnter() (inputInt, tea.Cmd) {
 	m.Value = intVal
 	m.input.Reset()
 
+	m.c <- TUIResponse{
+		Value: m.Value,
+		Err:   nil,
+	}
+
 	if m.isCLI {
 		return m, tea.Quit
 	}
+
+	m.close <- true
 
 	return m, nil
 }
