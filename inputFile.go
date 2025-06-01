@@ -131,7 +131,7 @@ func (m inputFile) checkPath() (os.FileInfo, string, error) {
 	return stat, abs, nil
 }
 
-func (m *inputFile) onEnter() (tea.Model, tea.Cmd) {
+func (m inputFile) onEnter() (tea.Model, tea.Cmd) {
 	stat, abs, err := m.checkPath()
 	if err != nil {
 		return m, nil
