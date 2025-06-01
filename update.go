@@ -211,6 +211,8 @@ func (m *model) onTUIChan(t TUIRequest, msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tuiTypeInputFile:
 		m.inputFile = m.inputFile.SetParams(t.Payload.(TUIInputFileParams), t.Response)
 	case tuiTypeConfirm:
+		m.confirm.width = m.windowWidth
+		m.confirm.height = m.windowHeight
 		m.confirm = m.confirm.SetParams(t.Payload.(TUIConfirmParams), t.Response)
 	}
 

@@ -13,7 +13,8 @@ var inputContainer = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Paddin
 type stylesStruct struct {
 	GrayStyle, LogStyle, DebugStyle, WarnStyle, ErrorHeaderStyle,
 	ErrorTextStyle, CMDCommandStyle, CMDFlagStyle, CMDFlagValueStyle,
-	CMDArgValueStyle, CMDStringStyle, InputTitle, InputDescription func(strs ...string) string
+	CMDArgValueStyle, CMDStringStyle, InputTitle, InputDescription,
+	InputSelected func(strs ...string) string
 }
 
 var styles = stylesStruct{
@@ -30,4 +31,5 @@ var styles = stylesStruct{
 	CMDStringStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Render,
 	InputTitle:        lipgloss.NewStyle().Background(lipgloss.Color("4")).Padding(0, 2).Bold(true).Render,
 	InputDescription:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Render,
+	InputSelected:     lipgloss.NewStyle().Foreground(lipgloss.Color("4")).Bold(true).Render,
 }

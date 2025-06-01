@@ -16,6 +16,8 @@ type confirm struct {
 	c      chan TUIResponse
 	close  chan bool
 	isCLI  bool
+	width  int
+	height int
 }
 
 func confirmNew(c chan bool, isCLI ...bool) confirm {
@@ -44,6 +46,13 @@ func (m confirm) Init() tea.Cmd {
 
 func (m confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		var cmd tea.Cmd
+
+		m.width = msg.Width
+		m.height = msg.Height
+
+		return m, cmd
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
@@ -94,16 +103,16 @@ func (m confirm) View() string {
 	var yes, no string
 
 	if m.cursor == 0 {
-		yes = fmt.Sprintf("[> %s <]", L(i18n_confirm_view_yes))
+		yes = styles.InputSelected(fmt.Sprintf("[> %s <]", L(i18n_confirm_view_yes)))
 		no = fmt.Sprintf("[  %s  ]", L(i18n_confirm_view_no))
 	} else {
 		yes = fmt.Sprintf("[  %s  ]", L(i18n_confirm_view_yes))
-		no = fmt.Sprintf("[> %s <]", L(i18n_confirm_view_no))
+		no = styles.InputSelected(fmt.Sprintf("[> %s <]", L(i18n_confirm_view_no)))
 	}
 
-	return fmt.Sprintf(`%s
+	return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
 
 %s
 
-%s %s`, m.params.Name, m.params.Description, yes, no)
+%s %s`, styles.InputTitle(m.params.Name), styles.InputDescription(m.params.Description), yes, no))
 }
