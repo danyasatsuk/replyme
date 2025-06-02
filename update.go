@@ -20,9 +20,6 @@ func (m *model) tuiUpdater(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var mod tea.Model
 		mod, cmd = m.selectOne.Update(msg)
 		m.selectOne = mod.(selectOne)
-	case tuiTypeSelectSeveral:
-		//nolint:godox
-		// TODO(medium): Implement SelectSeveral and add
 	case tuiTypeInputText:
 		var mod tea.Model
 		mod, cmd = m.inputText.Update(msg)

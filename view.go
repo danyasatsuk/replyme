@@ -6,8 +6,6 @@ func (m *model) View() string {
 		switch m.runningTUI.Type {
 		case tuiTypeSelectOne:
 			m.tuiViewport.SetContent(m.selectOne.View())
-		case tuiTypeSelectSeveral:
-			//m.tuiViewport.SetContent(m.selectSeveral.View())
 		case tuiTypeInputText:
 			m.tuiViewport.SetContent(m.inputText.View())
 		case tuiTypeInputInt:

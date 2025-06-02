@@ -8,7 +8,6 @@ type tuiType uint16
 
 const (
 	tuiTypeSelectOne tuiType = iota
-	tuiTypeSelectSeveral
 	tuiTypeInputText
 	tuiTypeInputInt
 	tuiTypeInputFile
