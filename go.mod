@@ -27,6 +27,7 @@ require (
 	github.com/charmbracelet/x/exp/slice v0.0.0-20250527132035-402b57aeba7d // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect

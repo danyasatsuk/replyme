@@ -109,3 +109,7 @@ translation = "item"
 [[message]]
 id = "tui_selectone_items"
 translation = "items"
+
+[[message]]
+id = "tui_inputFile_err"
+translation = "This file/directory is not suitable"

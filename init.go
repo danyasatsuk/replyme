@@ -10,5 +10,5 @@ func (m *model) Init() tea.Cmd {
 		return tea.Batch(m.spinner.Tick, ticker(), textinput.Blink)
 	}
 
-	return tea.Batch(m.spinner.Tick, ticker())
+	return tea.Batch(m.spinner.Tick, ticker(), m.inputFile.Init())
 }

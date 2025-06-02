@@ -109,3 +109,7 @@ translation = "элемент"
 [[message]]
 id = "tui_selectone_items"
 translation = "элемент(а/ов)"
+
+[[message]]
+id = "tui_inputFile_err"
+translation = "Этот файл/директория не подходит"

@@ -2,33 +2,36 @@ package replyme
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/danyasatsuk/replyme/internal/filepicker"
+	Log "log"
+	"os"
+	"strings"
+	"time"
 )
 
-const kilobyte = 1024
-
-var (
-	okStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
-	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
-)
+var bottomPadding = 10
 
 type inputFile struct {
-	input       textinput.Model
+	picker      filepicker.Model
 	IsValidated bool
 	IsExit      bool
 	Value       TUIInputFileResult
 	params      TUIInputFileParams
-	statusLine  string
-	statusStyle lipgloss.Style
 	isCLI       bool
 	c           chan TUIResponse
 	close       chan bool
+	width       int
+	height      int
+	err         string
+}
+
+type clearErrorMsg struct{}
+
+func clearErrorAfter(t time.Duration) tea.Cmd {
+	return tea.Tick(t, func(_ time.Time) tea.Msg {
+		return clearErrorMsg{}
+	})
 }
 
 func inputFileNew(c chan bool, isCLI ...bool) inputFile {
@@ -37,10 +40,13 @@ func inputFileNew(c chan bool, isCLI ...bool) inputFile {
 		cli = true
 	}
 
+	p := filepicker.New()
+	p.CurrentDirectory, _ = os.Getwd()
+
 	m := inputFile{
-		input: textinput.New(),
-		isCLI: cli,
-		close: c,
+		picker: p,
+		isCLI:  cli,
+		close:  c,
 	}
 
 	return m
@@ -48,176 +54,119 @@ func inputFileNew(c chan bool, isCLI ...bool) inputFile {
 
 func (m inputFile) SetParams(p TUIInputFileParams, c chan TUIResponse) inputFile {
 	m.params = p
-	m.input.Placeholder = L(i18n_inputfile_placeholder)
-	m.input.Focus()
+
+	m.picker = m.picker.SetHeight(m.height - bottomPadding)
+	if p.Extensions != nil && len(p.Extensions) > 0 {
+		m.picker.AllowedTypes = p.Extensions
+	}
+
+	m.IsValidated = false
+	m.IsExit = false
 	m.c = c
 
 	return m
 }
 
 func (m inputFile) Init() tea.Cmd {
-	return nil
-}
+	m.picker.CurrentDirectory, _ = os.Getwd()
+	m.picker.ShowHidden = true
 
-func (m inputFile) Focus() {
-	m.input.Focus()
-}
-
-func (m inputFile) Blur() {
-	m.input.Blur()
+	return m.picker.Init()
 }
 
 func (m inputFile) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		var cmd tea.Cmd
+
+		m.width = msg.Width
+		m.height = msg.Height
+		m.picker.SetHeight(m.height - bottomPadding)
+
+		m.picker, cmd = m.picker.Update(msg)
+
+		return m, cmd
 	case tea.KeyMsg:
-		if msg.Type == tea.KeyInsert && len(msg.String()) > 1 {
-			drop := strings.Trim(msg.String(), "\"'")
-			m.input.SetValue(drop)
-			m.updateStatus()
-
-			return m, nil
-		}
-
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.IsExit = true
-
 			if m.isCLI {
 				return m, tea.Quit
 			}
+			m.close <- true
 
 			return m, nil
-
-		case "enter":
-			return m.onEnter()
+		case "y":
+			Log.Print("test")
 		}
+	case clearErrorMsg:
+		m.err = ""
 	}
 
 	var cmd tea.Cmd
-	m.input, cmd = m.input.Update(msg)
 
-	m.updateStatus()
+	m.picker, cmd = m.picker.Update(msg)
+
+	if didSelect, path := m.picker.DidSelectFile(msg); didSelect {
+		var file []byte
+
+		if !m.params.DoNotOutput {
+			f, err := os.ReadFile(path)
+			if err != nil {
+				m.c <- TUIResponse{Err: err}
+			}
+
+			file = f
+		}
+
+		m.c <- TUIResponse{
+			Value: TUIInputFileResult{
+				Path: path,
+				File: file,
+			},
+		}
+
+		if m.isCLI {
+			return m, tea.Quit
+		}
+
+		m.close <- true
+	}
+
+	if didSelect, _ := m.picker.DidSelectDisabledFile(msg); didSelect {
+		m.err = L(i18n_tui_inputFile_err)
+
+		return m, tea.Batch(cmd, clearErrorAfter(2*time.Second))
+	}
 
 	return m, cmd
 }
 
 func (m inputFile) View() string {
-	return fmt.Sprintf(`%s
+	if m.err != "" {
+		return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
+
+%s
+%s
+
+%s`, styles.InputTitle(m.params.Name), styles.ErrorTextStyle(m.err), styles.InputDescription(m.params.Description), m.picker.View()))
+	}
+
+	if m.params.Extensions != nil && len(m.params.Extensions) > 0 {
+		return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
+
+%s
+%s
+
+%s`, styles.InputTitle(m.params.Name), styles.InputDescription(m.params.Description),
+			styles.InputDescription("("+strings.Join(m.params.Extensions, ", ")+")"), m.picker.View()))
+	}
+
+	return inputContainer.Width(m.width - 2).Height(m.height - 2).Render(fmt.Sprintf(`%s
 
 %s
 
-%s
 
-%s`, m.params.Name, m.params.Description, m.input.View(), m.statusStyle.Render(m.statusLine))
-}
-
-func (m inputFile) checkPath() (os.FileInfo, string, error) {
-	path := m.input.Value()
-
-	abs, err := filepath.Abs(path)
-	if err != nil {
-		m.setStatus(L(i18n_inputfile_fullpath_error), errorStyle)
-
-		return nil, "", err
-	}
-
-	stat, err := os.Stat(abs)
-	if err != nil || stat.IsDir() {
-		m.setStatus(L(i18n_inputfile_file_notfound), errorStyle)
-
-		return nil, "", err
-	}
-
-	return stat, abs, nil
-}
-
-func (m inputFile) onEnter() (tea.Model, tea.Cmd) {
-	stat, abs, err := m.checkPath()
-	if err != nil {
-		return m, nil
-	}
-
-	if len(m.params.Extensions) > 0 {
-		ok := false
-		ext := strings.ToLower(filepath.Ext(abs))
-
-		for _, allowed := range m.params.Extensions {
-			if strings.ToLower(allowed) == ext {
-				ok = true
-
-				break
-			}
-		}
-
-		if !ok {
-			m.setStatus(L(i18n_inputfile_extension_error), errorStyle)
-
-			return m, nil
-		}
-	}
-
-	if m.params.MaxFileSize > 0 {
-		sizeKB := stat.Size() / kilobyte
-		if int(sizeKB) > m.params.MaxFileSize {
-			m.setStatus(fmt.Sprintf(L(i18n_inputfile_size_error), sizeKB, m.params.MaxFileSize), errorStyle)
-
-			return m, nil
-		}
-	}
-
-	var contents []byte
-
-	if !m.params.DoNotOutput {
-		data, err := os.ReadFile(abs)
-		if err != nil {
-			m.setStatus(L(i18n_inputfile_read_error), errorStyle)
-
-			return m, nil
-		}
-
-		contents = data
-	}
-
-	m.Value = TUIInputFileResult{
-		Path: abs,
-		File: contents,
-	}
-	m.IsValidated = true
-	m.input.Reset()
-	m.setStatus(L(i18n_inputfile_success), okStyle)
-
-	m.c <- TUIResponse{
-		Value: m.Value,
-		Err:   nil,
-	}
-
-	if m.isCLI {
-		return m, tea.Quit
-	}
-
-	m.close <- true
-
-	return m, nil
-}
-
-func (m inputFile) setStatus(text string, style lipgloss.Style) {
-	m.statusLine = text
-	m.statusStyle = style
-}
-
-func (m inputFile) updateStatus() {
-	path := m.input.Value()
-
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		m.setStatus(L(i18n_inputfile_path_error), errorStyle)
-
-		return
-	}
-
-	if stat, err := os.Stat(absPath); err == nil && !stat.IsDir() {
-		m.setStatus(absPath, okStyle)
-	} else {
-		m.setStatus(absPath, errorStyle)
-	}
+%s`, styles.InputTitle(m.params.Name),
+		styles.InputDescription(m.params.Description), m.picker.View()))
 }

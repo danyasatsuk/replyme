@@ -32,4 +32,5 @@ const (
 	i18n_app_help_usage              string = "app_help_usage"
 	i18n_tui_selectone_item          string = "tui_selectone_item"
 	i18n_tui_selectone_items         string = "tui_selectone_items"
+	i18n_tui_inputFile_err           string = "tui_inputFile_err"
 )

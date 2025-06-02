@@ -3,6 +3,7 @@ package replyme
 import (
 	"errors"
 	"fmt"
+	"github.com/danyasatsuk/replyme/internal/filepicker"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -69,7 +70,6 @@ func (m *model) handleWindowSizeMsg(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) 
 
 	if m.isRunningTUI {
 		m.tuiViewport, cmd2 = m.tuiViewport.Update(msg)
-		m.tuiUpdater(msg)
 		_, cmd3 = m.tuiUpdater(msg)
 	}
 
@@ -211,6 +211,8 @@ func (m *model) onTUIChan(t TUIRequest, msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.inputInt.height = m.windowHeight
 		m.inputInt = m.inputInt.SetParams(t.Payload.(TUIInputIntParams), t.Response)
 	case tuiTypeInputFile:
+		m.inputFile.width = m.windowWidth
+		m.inputFile.height = m.windowHeight
 		m.inputFile = m.inputFile.SetParams(t.Payload.(TUIInputFileParams), t.Response)
 	case tuiTypeConfirm:
 		m.confirm.width = m.windowWidth
@@ -272,7 +274,17 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleTickMsg(msg)
 	case tea.MouseMsg:
 		return m.handleMouseMsg(msg)
+	case filepicker.ReadDirMsg, filepicker.ErrorMsg:
+		iF, cmd := m.inputFile.Update(msg)
+		m.inputFile = iF.(inputFile)
+
+		return m, cmd
+
 	default:
+		if m.isRunningTUI {
+			return m.tuiUpdater(msg)
+		}
+
 		if m.app.Params.EnableInputBlinking {
 			m.input, _ = m.input.Update(msg)
 
