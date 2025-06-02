@@ -4,6 +4,9 @@
 <p style="text-align: center"><b><a href="README.ru.md">[English]</a> [Русский]</b></p>
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/danyasatsuk/replyme.svg)](https://pkg.go.dev/github.com/danyasatsuk/replyme)
+[![Go Report Card](https://goreportcard.com/badge/github.com/danyasatsuk/replyme)](https://goreportcard.com/report/github.com/danyasatsuk/replyme)
+![GitHub Release](https://img.shields.io/github/v/release/danyasatsuk/replyme?include_prereleases)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/danyasatsuk/replyme/go.yml)
 
 > [!CAUTION]
 > Этот проект может содержать ошибки и недоработки, так как его разработка только начата. Подробнее об этом в разделе "Баги и Roadmap"
