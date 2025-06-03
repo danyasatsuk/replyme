@@ -84,11 +84,12 @@ func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					Value: m.Value,
 					Err:   nil,
 				}
-				m.close <- true
 
 				if m.isCLI {
 					return m, tea.Quit
 				}
+
+				m.close <- true
 
 				return m, nil
 			}

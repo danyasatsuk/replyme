@@ -55,7 +55,10 @@ func inputFileNew(c chan bool, isCLI ...bool) inputFile {
 func (m inputFile) SetParams(p TUIInputFileParams, c chan TUIResponse) inputFile {
 	m.params = p
 
-	m.picker = m.picker.SetHeight(m.height - bottomPadding)
+	if !m.isCLI {
+		m.picker = m.picker.SetHeight(m.height - bottomPadding)
+	}
+
 	if p.Extensions != nil && len(p.Extensions) > 0 {
 		m.picker.AllowedTypes = p.Extensions
 	}
@@ -81,9 +84,7 @@ func (m inputFile) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.width = msg.Width
 		m.height = msg.Height
-		m.picker.SetHeight(m.height - bottomPadding)
-
-		m.picker, cmd = m.picker.Update(msg)
+		m.picker = m.picker.SetHeight(m.height - bottomPadding)
 
 		return m, cmd
 	case tea.KeyMsg:

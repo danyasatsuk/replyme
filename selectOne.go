@@ -32,8 +32,11 @@ func (m selectOne) SetParams(p TUISelectOneParams, c chan TUIResponse) selectOne
 	m.IsValidated = false
 	m.IsExit = false
 	m.c = c
-	m.listModel.SetWidth(m.width - 2)
-	m.listModel.SetHeight(m.height - 2)
+
+	if !m.isCLI {
+		m.listModel.SetWidth(m.width - 2)
+		m.listModel.SetHeight(m.height - 2)
+	}
 
 	return m
 }
@@ -76,6 +79,8 @@ func (m selectOne) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 		m.listModel.SetWidth(msg.Width - 2)
 		m.listModel.SetHeight(msg.Height - 2)
 	}

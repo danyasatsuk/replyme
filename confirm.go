@@ -86,11 +86,12 @@ func (m confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.IsValidated = true
 			m.Value = m.cursor == 0
 			m.c <- TUIResponse{m.Value, nil}
-			m.close <- true
 
 			if m.isCLI {
 				return m, tea.Quit
 			}
+
+			m.close <- true
 
 			return m, nil
 		}
