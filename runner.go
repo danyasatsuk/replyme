@@ -134,19 +134,31 @@ func commandCleaner(commands []*Command) {
 	}
 }
 
+type fullRunCommandParams struct {
+	command    string
+	app        *App
+	logsChan   chan<- log
+	stdout     io.Writer
+	stderr     io.Writer
+	emitLog    func(logMsg)
+	emitTUI    func(TUIRequest)
+	emitTUICLI func(TUIRequest, chan<- bool)
+	isCLI      bool
+}
+
 //nolint:cyclop,funlen,lll
-func fullRunCommand(command string, app *App, logsChan chan<- log, stdout io.Writer, stderr io.Writer, emitLog func(logMsg), emitTUI func(TUIRequest)) error {
+func fullRunCommand(p fullRunCommandParams) error {
 	defer func() {
-		appRunCleaner(app)
+		appRunCleaner(p.app)
 	}()
 
-	ast, err := parseCommand(createCommandSchema(app.Commands),
-		createFlagSchema(app.Commands), createArgsSchema(app.Commands), command)
+	ast, err := parseCommand(createCommandSchema(p.app.Commands),
+		createFlagSchema(p.app.Commands), createArgsSchema(p.app.Commands), p.command)
 	if err != nil {
 		return err
 	}
 
-	flow, err := createCommandFlow(app, ast)
+	flow, err := createCommandFlow(p.app, ast)
 	if err != nil {
 		return err
 	}
@@ -164,9 +176,9 @@ func fullRunCommand(command string, app *App, logsChan chan<- log, stdout io.Wri
 		}); flagI != -1 {
 			help, err := helpCommand(flow[len(flow)-1])
 			if err != nil {
-				logsChan <- log{
+				p.logsChan <- log{
 					logTypeError,
-					command,
+					p.command,
 					"ERROR",
 					err,
 					time.Now(),
@@ -174,17 +186,17 @@ func fullRunCommand(command string, app *App, logsChan chan<- log, stdout io.Wri
 
 				return nil
 			}
-			logsChan <- log{
+			p.logsChan <- log{
 				logTypeMessage,
-				command,
+				p.command,
 				help,
 				nil,
 				time.Now(),
 			}
-			logsChan <- log{
+			p.logsChan <- log{
 				logTypeCommandSuccess,
-				command,
-				command,
+				p.command,
+				p.command,
 				nil,
 				time.Now(),
 			}
@@ -195,10 +207,15 @@ func fullRunCommand(command string, app *App, logsChan chan<- log, stdout io.Wri
 
 	for _, cmd := range flow {
 		ctx := createPreContext(cmd, ast)
-		ctx.emitLog = emitLog
-		ctx.stdout = stdout
-		ctx.stderr = stderr
-		ctx.emitTUI = emitTUI
+		ctx.isCLI = p.isCLI
+		ctx.emitLog = p.emitLog
+		ctx.stdout = p.stdout
+		ctx.stderr = p.stderr
+		if p.isCLI {
+			ctx.emitTUICLI = p.emitTUICLI
+		} else {
+			ctx.emitTUI = p.emitTUI
+		}
 
 		err = runActions(cmd, ctx)
 		if err != nil {
@@ -214,20 +231,25 @@ func fullRunCommand(command string, app *App, logsChan chan<- log, stdout io.Wri
 
 	for _, cmd := range flow {
 		ctx := createPreContext(cmd, ast)
-		ctx.emitLog = emitLog
-		ctx.stdout = stdout
-		ctx.stderr = stderr
-		ctx.emitTUI = emitTUI
+		ctx.isCLI = p.isCLI
+		ctx.emitLog = p.emitLog
+		ctx.stdout = p.stdout
+		ctx.stderr = p.stderr
+		if p.isCLI {
+			ctx.emitTUICLI = p.emitTUICLI
+		} else {
+			ctx.emitTUI = p.emitTUI
+		}
 
 		err = runEnd(cmd, ctx)
 		if err != nil {
 			return err
 		}
 	}
-	logsChan <- log{
+	p.logsChan <- log{
 		logTypeCommandSuccess,
-		command,
-		command,
+		p.command,
+		p.command,
 		nil,
 		time.Now(),
 	}
@@ -236,7 +258,10 @@ func fullRunCommand(command string, app *App, logsChan chan<- log, stdout io.Wri
 }
 
 func (m *model) runCommand(command string) error {
-	err := fullRunCommand(command, m.app, m.logsChan, m.stdout, m.stderr, m.emitLog, m.emitTUI)
+	err := fullRunCommand(fullRunCommandParams{
+		command, m.app, m.logsChan, m.stdout, m.stderr,
+		m.emitLog, m.emitTUI, nil, false,
+	})
 	m.runningCommand = ""
 	m.input.running = false
 

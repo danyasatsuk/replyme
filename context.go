@@ -85,16 +85,18 @@ func createPreContext(command *Command, ast *ASTNode) *Context {
 
 // Context - the structure that is passed when executing the functions of the command.
 type Context struct {
-	ctx       context.Context
-	cancel    context.CancelFunc
-	command   *Command
-	ast       *ASTNode
-	memory    *map[string]interface{}
-	emitLog   func(logMsg)
-	emitTUI   func(TUIRequest)
-	stdout    io.Writer
-	stderr    io.Writer
-	startTime time.Time
+	ctx        context.Context
+	cancel     context.CancelFunc
+	command    *Command
+	ast        *ASTNode
+	memory     *map[string]interface{}
+	emitLog    func(logMsg)
+	emitTUI    func(TUIRequest)
+	emitTUICLI func(TUIRequest, chan<- bool)
+	stdout     io.Writer
+	stderr     io.Writer
+	startTime  time.Time
+	isCLI      bool
 }
 
 // GetName - returns the name of the command.
@@ -352,7 +354,18 @@ func (c *Context) SelectOne(p *TUISelectOneParams) (TUISelectOneResult, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	go c.emitTUI(req)
+	if c.isCLI {
+		close := make(chan bool)
+
+		go c.emitTUICLI(req, close)
+
+		defer func() {
+			// Wait for the CLI TUI to finish
+			<-close
+		}()
+	} else {
+		go c.emitTUI(req)
+	}
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -371,7 +384,18 @@ func (c *Context) InputText(p *TUIInputTextParams) (string, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	go c.emitTUI(req)
+	if c.isCLI {
+		close := make(chan bool)
+
+		go c.emitTUICLI(req, close)
+
+		defer func() {
+			// Wait for the CLI TUI to finish
+			<-close
+		}()
+	} else {
+		go c.emitTUI(req)
+	}
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -390,7 +414,18 @@ func (c *Context) InputInt(p *TUIInputIntParams) (int, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	go c.emitTUI(req)
+	if c.isCLI {
+		close := make(chan bool)
+
+		go c.emitTUICLI(req, close)
+
+		defer func() {
+			// Wait for the CLI TUI to finish
+			<-close
+		}()
+	} else {
+		go c.emitTUI(req)
+	}
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -409,7 +444,18 @@ func (c *Context) InputFile(p *TUIInputFileParams) (TUIInputFileResult, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	go c.emitTUI(req)
+	if c.isCLI {
+		close := make(chan bool)
+
+		go c.emitTUICLI(req, close)
+
+		defer func() {
+			// Wait for the CLI TUI to finish
+			<-close
+		}()
+	} else {
+		go c.emitTUI(req)
+	}
 
 	res := <-req.Response
 	if res.Err != nil {
@@ -428,7 +474,18 @@ func (c *Context) Confirm(p *TUIConfirmParams) (bool, error) {
 		Response: make(chan TUIResponse),
 	}
 
-	go c.emitTUI(req)
+	if c.isCLI {
+		close := make(chan bool)
+
+		go c.emitTUICLI(req, close)
+
+		defer func() {
+			// Wait for the CLI TUI to finish
+			<-close
+		}()
+	} else {
+		go c.emitTUI(req)
+	}
 
 	res := <-req.Response
 	if res.Err != nil {
