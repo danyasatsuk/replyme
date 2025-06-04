@@ -16,3 +16,14 @@ func Run(app *App) error {
 
 	return err
 }
+
+func RunCLI(app *App) error {
+	err := i18nInit()
+	if err != nil {
+		return err
+	}
+
+	app.setHelpFlags()
+
+	return cliRunner(app)
+}
