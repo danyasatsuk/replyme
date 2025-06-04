@@ -34,6 +34,8 @@ github.com/charmbracelet/x/exp/slice v0.0.0-20250527132035-402b57aeba7d h1:5YURV
 github.com/charmbracelet/x/exp/slice v0.0.0-20250527132035-402b57aeba7d/go.mod h1:vI5nDVMWi6veaYH+0Fmvpbe/+cv/iJfMntdh+N0+Tms=
 github.com/charmbracelet/x/exp/slice v0.0.0-20250602192518-9e722df69bbb h1:6aNIpUnsNbM2N/ZFQT9w0/ur2fxWW0THyL4EEYZPkKM=
 github.com/charmbracelet/x/exp/slice v0.0.0-20250602192518-9e722df69bbb/go.mod h1:vI5nDVMWi6veaYH+0Fmvpbe/+cv/iJfMntdh+N0+Tms=
+github.com/charmbracelet/x/exp/teatest v0.0.0-20250603201427-c31516f43444 h1:aURsqPm0BVtBxnSCLXKgGAiq14JgOVbLCUESp8DypHg=
+github.com/charmbracelet/x/exp/teatest v0.0.0-20250603201427-c31516f43444/go.mod h1:MhV4atqUTcHvdaA7Qbkgb0Tvvr+BrH6IW7/i2XW39R8=
 github.com/charmbracelet/x/term v0.2.1 h1:AQeHeLZ1OqSXhrAWpYUtZyX1T3zVxfpZuEQMIQaGIAQ=
 github.com/charmbracelet/x/term v0.2.1/go.mod h1:oQ4enTYFV7QN4m0i9mzHrViD7TQKvNEEkHUMCmsxdUg=
 github.com/dlclark/regexp2 v1.11.5 h1:Q/sSnsKerHeCkc/jSTNq1oCm7KiVgUMZRDUoRu0JQZQ=
