@@ -32,6 +32,7 @@ func main() {
 						},
 						Action: func(ctx *replyme.Context) error {
 							ctx.Printf("Hello, %s!\n", ctx.GetFlagString("username", "anonymous"))
+
 							return nil
 						},
 					},

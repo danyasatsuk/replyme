@@ -17,6 +17,7 @@ func main() {
 				},
 				Action: func(ctx *replyme.Context) error {
 					ctx.Printf("Hello, %s!\n", ctx.GetFlagString("name", "Unknown"))
+
 					return nil
 				},
 			},
@@ -40,6 +41,7 @@ func main() {
 					ctx.Printf("Hello, %s!", ctx.GetFlagString("login", "UnknownLogin"))
 					ctx.Printf("You have %d apples!", ctx.GetFlagInt("count", 0))
 					ctx.Printf("Your password is %s", ctx.GetFlagString("password", "'stop, i don't want to see it'"))
+
 					return nil
 				},
 			},

@@ -12,6 +12,7 @@ func main() {
 				Usage: "Print Hello World",
 				Action: func(ctx *replyme.Context) error {
 					ctx.Print("Hello, World!")
+
 					return nil
 				},
 			},
