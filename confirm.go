@@ -58,6 +58,12 @@ func (m confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "esc":
 			m.IsExit = true
 
+			if m.isCLI {
+				return m, tea.Quit
+			}
+
+			m.close <- true
+
 			return m, nil
 
 		case "left", "h":

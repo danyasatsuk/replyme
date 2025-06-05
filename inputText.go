@@ -69,6 +69,8 @@ func (m inputText) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
+			m.close <- true
+
 			return m, nil
 		case "enter":
 			if m.params.MaxLength > 0 && len(m.input.Value()) > m.params.MaxLength {

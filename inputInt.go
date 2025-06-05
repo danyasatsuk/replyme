@@ -79,6 +79,8 @@ func (m inputInt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
+			m.close <- true
+
 			return m, nil
 
 		case "enter":

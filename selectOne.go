@@ -56,7 +56,7 @@ func (m selectOne) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
-			return m, nil
+			m.close <- true
 		case "enter":
 			selected := m.listModel.SelectedItem()
 			if item, ok := selected.(TUISelectItem); ok {
