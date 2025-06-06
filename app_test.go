@@ -3,6 +3,7 @@ package replyme
 import (
 	"github.com/go-faker/faker/v4"
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -107,5 +108,100 @@ func TestParseFlagSchemaSingle(t *testing.T) {
 
 	if !reflect.DeepEqual(value, schema) {
 		t.Fatal("parse flag schema failed", value, schema)
+	}
+}
+
+func TestApp_ParseFlagSchema(t *testing.T) {
+	app := &App{
+		Commands: Commands{
+			&Command{
+				Name:  "test",
+				Usage: "test command",
+				Flags: Flags{
+					&FlagValue[string]{
+						Name: "a",
+					},
+					&FlagValue[int]{
+						Name: "b",
+					},
+				},
+				Subcommands: Commands{
+					&Command{
+						Name:  "sub",
+						Usage: "sub command",
+						Flags: Flags{
+							&FlagValue[bool]{
+								Name: "c",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	schema := app.getFlagSchema()
+
+	expected := flagSchema{
+		"test": {
+			"a": FlagTypeString,
+			"b": FlagTypeInt,
+		},
+		"sub": {
+			"c": FlagTypeBool,
+		},
+	}
+
+	if !reflect.DeepEqual(schema, expected) {
+		t.Fatal("parse flag schema failed", schema, expected)
+	}
+}
+
+func TestApp_SetHelpFlags(t *testing.T) {
+	i18nInit()
+
+	app := &App{
+		Commands: Commands{
+			&Command{
+				Name:  "test",
+				Usage: "test command",
+				Flags: Flags{
+					&FlagValue[string]{
+						Name: "a",
+					},
+					&FlagValue[int]{
+						Name: "b",
+					},
+				},
+				Subcommands: Commands{
+					&Command{
+						Name:  "sub",
+						Usage: "sub command",
+						Flags: Flags{
+							&FlagValue[bool]{
+								Name: "c",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	app.setHelpFlags()
+
+	setHelpFlagsChecker(t, app.Commands)
+}
+
+func setHelpFlagsChecker(t *testing.T, commands Commands) {
+	for _, cmd := range commands {
+		if slices.IndexFunc(cmd.Flags, func(flag Flag) bool {
+			return flag.GetName() == "help"
+		}) == -1 {
+			t.Fatal("help flag not set")
+		}
+		if cmd.Subcommands != nil {
+			setHelpFlagsChecker(t, cmd.Subcommands)
+		}
 	}
 }

@@ -14,9 +14,13 @@ func TestArgument(t *testing.T) {
 		value: value,
 	}
 
-	arg.setValue("test")
+	t.Run("setValue", func(t *testing.T) {
+		arg.setValue("test")
+	})
 
-	if arg.GetValue() != "test" {
-		t.Fatal("value mismatch")
-	}
+	t.Run("getValue", func(t *testing.T) {
+		if arg.GetValue() != "test" {
+			t.Fatal("value mismatch")
+		}
+	})
 }
